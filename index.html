@@ -1,0 +1,3719 @@
+﻿<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop stop-color='%230ea5e9'/%3E%3Cstop offset='.55' stop-color='%238b5cf6'/%3E%3Cstop offset='1' stop-color='%23f97316'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='14' fill='url(%23g)'/%3E%3Ctext x='32' y='44' text-anchor='middle' font-size='36' font-family='Georgia,serif' font-weight='700' fill='white'%3E%26%233321%3B%3C/text%3E%3C/svg%3E">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>數學學習模擬器 Pro · F1–F3</title>
+<style>
+:root{
+  --bg:#f4f6fb; --card:#fff; --text:#1e293b; --muted:#7b8798; --line:#e8ecf4;
+  --f1:#0ea5e9; --f2:#8b5cf6; --f3:#f97316;
+  --ok:#16a34a; --bad:#dc2626; --radius:20px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang TC","Microsoft JhengHei","Noto Sans TC",sans-serif;
+  background:var(--bg);color:var(--text);line-height:1.65;-webkit-font-smoothing:antialiased;
+  background-image:radial-gradient(circle at 12% 8%,rgba(14,165,233,.09),transparent 42%),
+                   radial-gradient(circle at 88% 4%,rgba(139,92,246,.09),transparent 42%),
+                   radial-gradient(circle at 50% 100%,rgba(249,115,22,.07),transparent 45%);
+  background-attachment:fixed;
+}
+button,input,textarea,select{font-family:inherit}
+/* ---------- 頂欄 ---------- */
+.topbar{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);background:rgba(244,246,251,.86);border-bottom:1px solid var(--line)}
+.topbar-in{max-width:1240px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:11px;flex:none}
+.logo{width:42px;height:42px;border-radius:13px;background:linear-gradient(135deg,#0ea5e9,#8b5cf6 60%,#f97316);color:#fff;font-size:21px;font-weight:800;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 22px -10px rgba(99,102,241,.7)}
+.brand h1{font-size:16px;font-weight:800;letter-spacing:.2px;line-height:1.2}
+.brand p{font-size:11px;color:var(--muted)}
+.nav{display:flex;gap:5px;flex:1;overflow-x:auto;scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.nav button{
+  border:0;background:transparent;padding:8px 14px;border-radius:11px;font-size:13.5px;font-weight:700;
+  color:var(--muted);cursor:pointer;white-space:nowrap;transition:.22s
+}
+.nav button:hover{background:#fff;color:var(--text)}
+.nav button.active{background:#1e293b;color:#fff;box-shadow:0 8px 18px -10px rgba(15,23,42,.8)}
+.top-right{display:flex;align-items:center;gap:8px;flex:none}
+.lang-switch{display:flex;background:#fff;border:1px solid var(--line);border-radius:10px;padding:2px}
+.lang-switch button{border:0;background:transparent;padding:5px 11px;border-radius:8px;font-size:12px;font-weight:800;color:var(--muted);cursor:pointer;transition:.2s}
+.lang-switch button.active{background:#1e293b;color:#fff}
+.user-chip{display:flex;align-items:center;gap:7px;background:#fff;border:1px solid var(--line);border-radius:11px;padding:5px 12px;font-size:13px;font-weight:700;cursor:pointer;transition:.2s}
+.user-chip:hover{border-color:#c7d2e3;transform:translateY(-1px)}
+.avatar{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#0ea5e9,#8b5cf6);color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center}
+/* ---------- 版面 ---------- */
+.view{display:none;max-width:1240px;margin:0 auto;padding:20px 20px 80px}
+.view.active{display:block;animation:fadeUp .4s cubic-bezier(.22,1,.36,1)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.hero{text-align:center;padding:22px 0 30px}
+.hero h2{font-size:29px;font-weight:800;letter-spacing:-.5px}
+.hero p{color:var(--muted);font-size:14px;margin-top:7px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(266px,1fr));gap:22px}
+/* ---------- 年級卡 ---------- */
+.gcard{position:relative;background:var(--card);border-radius:24px;padding:30px 24px 26px;border:2px solid var(--line);cursor:pointer;overflow:hidden;transition:transform .4s cubic-bezier(.22,1,.36,1),box-shadow .4s,border-color .4s}
+.gcard::before{content:'';position:absolute;inset:0;border-radius:24px;pointer-events:none;background:radial-gradient(circle at 50% -10%,var(--as),transparent 68%);opacity:0;transition:opacity .4s}
+.gcard[data-g="f1"]{--ac:var(--f1);--as:rgba(14,165,233,.15);--ash:rgba(14,165,233,.42)}
+.gcard[data-g="f2"]{--ac:var(--f2);--as:rgba(139,92,246,.15);--ash:rgba(139,92,246,.42)}
+.gcard[data-g="f3"]{--ac:var(--f3);--as:rgba(249,115,22,.15);--ash:rgba(249,115,22,.42)}
+.gcard:hover,.gcard:focus-visible{transform:scale(1.05) translateY(-9px);border-color:var(--ac);box-shadow:0 28px 50px -24px var(--ash),0 0 0 7px var(--as);outline:none}
+.gcard:hover::before{opacity:1}
+.gcard:hover .gico{transform:scale(1.15) rotate(-6deg)}
+.gcard:hover .garrow{transform:translateX(6px);opacity:1}
+.gico{width:58px;height:58px;border-radius:18px;margin-bottom:18px;display:flex;align-items:center;justify-content:center;font-size:27px;font-weight:800;color:#fff;background:linear-gradient(135deg,var(--ac),color-mix(in srgb,var(--ac) 55%,#fff));box-shadow:0 14px 26px -13px var(--ash);transition:transform .4s}
+.gtitle{font-size:22px;font-weight:800}
+.gdesc{font-size:13px;color:var(--muted);margin-top:6px;min-height:40px}
+.gtags{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.gtags span{font-size:11px;padding:3px 9px;border-radius:7px;background:var(--as);color:var(--ac);font-weight:700}
+.garrow{position:absolute;right:24px;bottom:24px;font-size:21px;color:var(--ac);opacity:.45;transition:.4s}
+/* ---------- 通用卡片 ---------- */
+.panel{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:22px 24px}
+.panel h3{font-size:16px;font-weight:800;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.btn{border:0;border-radius:12px;padding:11px 20px;font-size:14px;font-weight:700;cursor:pointer;transition:.22s}
+.btn.primary{background:#1e293b;color:#fff}
+.btn.primary:hover:not(:disabled){background:#0f172a;transform:translateY(-2px);box-shadow:0 14px 26px -16px rgba(15,23,42,.9)}
+.btn.primary:disabled{opacity:.4;cursor:not-allowed}
+.btn.ghost{background:#f1f4fa;color:#475569}
+.btn.ghost:hover{background:#e6ebf5}
+.btn.sm{padding:7px 14px;font-size:12.5px;border-radius:10px}
+.btn.danger{background:#fee2e2;color:#b91c1c}
+.btn.danger:hover{background:#fecaca}
+/* ---------- 學習 ---------- */
+.learn-grid{display:grid;grid-template-columns:250px 1fr;gap:22px;align-items:start}
+.side{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:16px 13px;position:sticky;top:80px}
+.side h4{font-size:13px;font-weight:800;color:var(--muted);padding:0 8px 9px;letter-spacing:.5px}
+.gswitch{display:flex;gap:5px;padding:0 4px 12px;border-bottom:1px solid var(--line);margin-bottom:10px}
+.gswitch button{flex:1;border:0;background:#f4f6fb;color:var(--muted);padding:7px 0;border-radius:9px;font-size:12.5px;font-weight:800;cursor:pointer;transition:.2s}
+.gswitch button.active{background:#1e293b;color:#fff}
+.tlist{list-style:none;display:flex;flex-direction:column;gap:3px}
+.titem{display:flex;align-items:center;gap:10px;padding:10px 11px;border-radius:11px;cursor:pointer;font-size:13.5px;font-weight:700;color:#475569;transition:.2s;border-left:3px solid transparent}
+.titem:hover{background:#f6f8fc;color:var(--text);transform:translateX(2px)}
+.titem.active{background:#eef4ff;color:#1d4ed8;border-left-color:#3b82f6}
+.titem .ti{width:26px;height:26px;border-radius:8px;flex:none;background:#eef2f9;display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:800}
+.titem.active .ti{background:#dbeafe}
+.content{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:28px 30px;min-height:400px}
+.content .chead{display:flex;align-items:center;gap:13px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--line)}
+.content .cico{width:44px;height:44px;border-radius:13px;flex:none;display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:800;background:#eef4ff;color:#1d4ed8}
+.content h2{font-size:21px;font-weight:800}
+.content h3{font-size:15.5px;font-weight:800;margin:20px 0 8px;color:#0f172a;padding-left:11px;border-left:4px solid #3b82f6;line-height:1.3}
+.content h4{font-size:14px;font-weight:800;margin:14px 0 6px;color:#334155}
+.content p,.content li{font-size:14px;color:#334155;margin-bottom:6px}
+.content ul,.content ol{padding-left:21px;margin:7px 0}
+.content b{color:#0f172a}
+.example{background:#f7f9fd;border-left:4px solid #3b82f6;border-radius:0 12px 12px 0;padding:12px 16px;margin:12px 0;font-size:13.5px;color:#1e293b}
+.example b{color:#1d4ed8}
+.warn{background:#fff5f5;border-left:4px solid #ef4444;border-radius:0 12px 12px 0;padding:12px 16px;margin:12px 0;font-size:13.5px;color:#7f1d1d}
+.tip{background:linear-gradient(135deg,#fff8ed,#fffdf9);border:1px solid #fce9cf;border-radius:12px;padding:12px 16px;margin-top:14px;font-size:13px;color:#8a5a12}
+.formula{background:#0f172a;color:#e2e8f0;border-radius:12px;padding:13px 18px;margin:11px 0;font-size:14.5px;font-weight:600;letter-spacing:.3px;overflow-x:auto}
+/* ---------- 專題練習 ---------- */
+.exam-setup{display:grid;gap:16px}
+.opt-row{display:flex;flex-wrap:wrap;gap:8px}
+.opt{border:1.5px solid var(--line);background:#fff;padding:9px 18px;border-radius:11px;font-size:13.5px;font-weight:700;color:var(--muted);cursor:pointer;transition:.22s}
+.opt:hover{transform:translateY(-2px);box-shadow:0 10px 20px -15px rgba(30,41,59,.6)}
+.opt.active{background:#1e293b;border-color:#1e293b;color:#fff}
+.topic-pick{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:9px}
+.tpc{border:1.5px solid var(--line);background:#fff;border-radius:12px;padding:11px 13px;cursor:pointer;transition:.22s;text-align:left}
+.tpc:hover{border-color:#b9c6dc;transform:translateY(-2px)}
+.tpc.active{border-color:#3b82f6;background:#eef4ff;box-shadow:0 0 0 3px rgba(59,130,246,.12)}
+.tpc b{display:block;font-size:13px;font-weight:800}
+.tpc span{font-size:11px;color:var(--muted)}
+/* 答題 */
+.qbar{display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:700;color:var(--muted);margin-bottom:12px}
+.progress{height:7px;background:#e8ecf4;border-radius:99px;overflow:hidden;margin-bottom:20px}
+.progress i{display:block;height:100%;background:linear-gradient(90deg,#0ea5e9,#8b5cf6);border-radius:99px;transition:width .35s}
+.qtext{font-size:19px;font-weight:700;line-height:1.55;padding:20px 22px;background:#f7f9fd;border-radius:15px;margin-bottom:18px;min-height:60px}
+.ansrow{display:flex;gap:10px}
+.ansrow input{flex:1;border:2px solid var(--line);border-radius:12px;padding:12px 15px;font-size:16px;font-weight:700;outline:none;transition:.2s;background:#fff;color:var(--text)}
+.ansrow input:focus{border-color:#3b82f6;box-shadow:0 0 0 4px rgba(59,130,246,.12)}
+.feedback{margin-top:14px;font-size:15px;font-weight:800;min-height:24px}
+.feedback.ok{color:var(--ok)}.feedback.bad{color:var(--bad)}
+.explain{margin-top:14px;background:#f7f9fd;border-left:4px solid #3b82f6;border-radius:0 12px 12px 0;padding:14px 18px;font-size:13.5px;display:none}
+.explain.show{display:block;animation:fadeUp .3s}
+.explain h5{font-size:13px;font-weight:800;color:#1d4ed8;margin-bottom:7px}
+.explain ol{padding-left:19px}
+.explain li{margin-bottom:5px}
+.result-big{text-align:center;padding:14px 0 22px}
+.result-big .num{font-size:52px;font-weight:800;letter-spacing:-2px;line-height:1}
+.result-big .lbl{font-size:13px;color:var(--muted);font-weight:700;margin-top:4px}
+.result-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:11px;margin:18px 0}
+.rstat{background:#f7f9fd;border-radius:13px;padding:13px;text-align:center}
+.rstat b{display:block;font-size:20px;font-weight:800}
+.rstat span{font-size:11.5px;color:var(--muted);font-weight:700}
+/* ---------- 坐標系 ---------- */
+.graph-wrap{display:grid;grid-template-columns:1fr 280px;gap:18px;align-items:start}
+.canvas-box{background:#fff;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;position:relative}
+#graphCanvas{display:block;width:100%;height:520px;touch-action:none;cursor:crosshair}
+.gtools{position:absolute;top:12px;left:12px;display:flex;gap:6px;flex-wrap:wrap}
+.gtools button{border:1px solid var(--line);background:rgba(255,255,255,.94);border-radius:9px;padding:6px 11px;font-size:12px;font-weight:700;cursor:pointer;transition:.2s;color:#475569}
+.gtools button:hover{background:#fff;border-color:#b9c6dc}
+.gtools button.active{background:#1e293b;color:#fff;border-color:#1e293b}
+.gpanel{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:18px}
+.gpanel h4{font-size:13px;font-weight:800;margin-bottom:10px;color:#334155}
+.glist{list-style:none;font-size:12.5px;max-height:220px;overflow-y:auto;margin-bottom:12px}
+.glist li{display:flex;justify-content:space-between;gap:8px;padding:7px 9px;border-radius:8px;background:#f7f9fd;margin-bottom:5px;font-weight:600}
+.glist li span{color:var(--muted);font-weight:600}
+.glist li button{border:0;background:transparent;color:#dc2626;font-weight:800;cursor:pointer;font-size:12px}
+.ghint{font-size:11.5px;color:var(--muted);line-height:1.6;background:#f7f9fd;border-radius:10px;padding:9px 11px}
+/* ---------- AI ---------- */
+.ai-wrap{display:grid;grid-template-columns:1fr 300px;gap:18px;align-items:start}
+.chat{background:#fff;border:1px solid var(--line);border-radius:var(--radius);display:flex;flex-direction:column;height:560px;overflow:hidden}
+.chat-log{flex:1;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:12px}
+.msg{max-width:86%;padding:11px 15px;border-radius:14px;font-size:13.5px;line-height:1.6;white-space:pre-wrap;word-break:break-word}
+.msg.bot{background:#f1f4fa;color:#1e293b;border-bottom-left-radius:4px;align-self:flex-start}
+.msg.me{background:#1e293b;color:#fff;border-bottom-right-radius:4px;align-self:flex-end}
+.msg.bot b{color:#1d4ed8}
+.chat-in{display:flex;gap:9px;padding:13px;border-top:1px solid var(--line);background:#fbfcfe}
+.chat-in textarea{flex:1;border:1.5px solid var(--line);border-radius:11px;padding:9px 13px;font-size:13.5px;resize:none;height:44px;outline:none;transition:.2s}
+.chat-in textarea:focus{border-color:#3b82f6}
+.quick{display:flex;flex-wrap:wrap;gap:6px;padding:0 13px 12px}
+.quick button{border:1px solid var(--line);background:#fff;border-radius:8px;padding:5px 11px;font-size:11.5px;font-weight:700;color:#475569;cursor:pointer;transition:.2s}
+.quick button:hover{background:#eef4ff;border-color:#bfdbfe;color:#1d4ed8}
+.upload-box{border:2px dashed #cfd9e8;border-radius:13px;padding:16px;text-align:center;cursor:pointer;transition:.2s;margin-bottom:12px}
+.upload-box:hover{border-color:#3b82f6;background:#f7fbff}
+.upload-box input{display:none}
+.upload-box p{font-size:12.5px;color:var(--muted);font-weight:700}
+.upload-box .ic{font-size:26px;margin-bottom:5px}
+#preview{max-width:100%;border-radius:10px;margin-top:9px;display:none}
+/* ---------- 我的 ---------- */
+.tabs{display:flex;gap:7px;margin-bottom:18px;flex-wrap:wrap}
+.tabs button{border:1.5px solid var(--line);background:#fff;padding:9px 20px;border-radius:11px;font-size:13.5px;font-weight:700;color:var(--muted);cursor:pointer;transition:.2s}
+.tabs button.active{background:#1e293b;border-color:#1e293b;color:#fff}
+.item{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 17px;margin-bottom:11px;transition:.2s}
+.item:hover{border-color:#cfd9e8;box-shadow:0 8px 22px -18px rgba(30,41,59,.6)}
+.item-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.item-head b{font-size:14px}
+.item-head .meta{font-size:11.5px;color:var(--muted);font-weight:700}
+.badge{display:inline-block;font-size:10.5px;padding:2px 9px;border-radius:7px;font-weight:800;margin-left:6px}
+.badge.ok{background:#dcfce7;color:#15803d}
+.badge.bad{background:#fee2e2;color:#b91c1c}
+.badge.mid{background:#fef3c7;color:#a16207}
+.detail{display:none;margin-top:12px;border-top:1px dashed var(--line);padding-top:12px}
+.detail.show{display:block;animation:fadeUp .28s}
+.dq{font-size:13px;font-weight:700;margin-bottom:5px}
+.dmeta{font-size:12px;margin-bottom:5px;color:var(--muted)}
+.dex{font-size:12.5px;background:#f7f9fd;border-radius:9px;padding:9px 12px;color:#334155}
+.empty{text-align:center;padding:44px 20px;color:var(--muted);font-size:13.5px}
+.empty .ic{font-size:40px;margin-bottom:10px;opacity:.5}
+.note-item{background:#fff;border:1px solid var(--line);border-radius:13px;padding:14px 16px;margin-bottom:10px}
+.note-item h5{font-size:13.5px;font-weight:800;margin-bottom:5px;display:flex;justify-content:space-between;gap:8px}
+.note-item p{font-size:13px;color:#475569;white-space:pre-wrap}
+.note-item .tag{font-size:10.5px;background:#eef4ff;color:#1d4ed8;padding:2px 8px;border-radius:6px;font-weight:800}
+.field{margin-bottom:11px}
+.field label{display:block;font-size:12px;font-weight:800;color:#475569;margin-bottom:5px}
+.field input,.field textarea,.field select{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:10px 13px;font-size:13.5px;outline:none;transition:.2s;background:#fff;color:var(--text)}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.1)}
+.field textarea{resize:vertical;min-height:90px}
+/* 登入 */
+.auth-card{max-width:400px;margin:36px auto;background:#fff;border:1px solid var(--line);border-radius:22px;padding:32px 30px;box-shadow:0 30px 60px -40px rgba(30,41,59,.5)}
+.auth-card h2{font-size:21px;font-weight:800;text-align:center;margin-bottom:6px}
+.auth-card>p{text-align:center;font-size:12.5px;color:var(--muted);margin-bottom:20px}
+.auth-tabs{display:flex;background:#f1f4fa;border-radius:11px;padding:3px;margin-bottom:18px}
+.auth-tabs button{flex:1;border:0;background:transparent;padding:8px;border-radius:9px;font-size:13px;font-weight:800;color:var(--muted);cursor:pointer;transition:.2s}
+.auth-tabs button.active{background:#fff;color:var(--text);box-shadow:0 3px 9px -4px rgba(30,41,59,.25)}
+.auth-msg{font-size:12.5px;font-weight:700;text-align:center;min-height:20px;margin-top:9px}
+.auth-msg.err{color:var(--bad)}.auth-msg.ok{color:var(--ok)}
+/* 響應式 */
+@media(max-width:900px){
+  .learn-grid,.graph-wrap,.ai-wrap{grid-template-columns:1fr}
+  .side{position:static}
+  .tlist{flex-direction:row;overflow-x:auto;padding-bottom:5px}
+  .titem{white-space:nowrap;border-left:0;border-bottom:3px solid transparent}
+  .titem.active{border-left:0;border-bottom-color:#3b82f6}
+  .content{padding:22px 18px}
+}
+@media(max-width:600px){
+  .topbar-in{padding:10px 14px;gap:10px}
+  .brand h1{font-size:14px}.brand p{display:none}
+  .view{padding:14px 14px 70px}
+  .hero h2{font-size:23px}
+  .content{padding:18px 15px}
+  .qtext{font-size:16.5px;padding:16px}
+  .ansrow{flex-direction:column}
+  .ansrow .btn{width:100%}
+  #graphCanvas{height:400px}
+  .chat{height:480px}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-in">
+    <div class="brand">
+      <div class="logo">∑</div>
+      <div><h1 data-i="appTitle"></h1><p data-i="appSub"></p></div>
+    </div>
+    <nav class="nav" id="nav"></nav>
+    <div class="top-right">
+      <div class="lang-switch">
+        <button data-lang="zh" class="active">中</button>
+        <button data-lang="en">EN</button>
+      </div>
+      <div class="user-chip" id="userChip"></div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- 首頁 -->
+  <section class="view active" id="view-home">
+    <div class="hero">
+      <h2 data-i="heroTitle"></h2>
+      <p data-i="heroSub"></p>
+    </div>
+    <div class="grid3" id="gradeGrid"></div>
+    <div class="panel" style="margin-top:26px">
+      <h3>⚡ <span data-i="quickTitle"></span></h3>
+      <div class="opt-row" id="quickLinks"></div>
+    </div>
+  </section>
+
+  <!-- 學習 -->
+  <section class="view" id="view-learn">
+    <div class="learn-grid">
+      <aside class="side">
+        <div class="gswitch" id="gswitch"></div>
+        <h4 data-i="topicList"></h4>
+        <ul class="tlist" id="tlist"></ul>
+      </aside>
+      <article class="content" id="content"></article>
+    </div>
+  </section>
+
+  <!-- 專題練習 -->
+  <section class="view" id="view-exam">
+    <div id="examSetup"></div>
+    <div id="examRun" style="display:none"></div>
+    <div id="examResult" style="display:none"></div>
+  </section>
+
+  <!-- 坐標系 -->
+  <section class="view" id="view-graph">
+    <div class="graph-wrap">
+      <div class="canvas-box">
+        <canvas id="graphCanvas"></canvas>
+        <div class="gtools" id="gtools"></div>
+      </div>
+      <aside class="gpanel">
+        <h4 data-i="gList"></h4>
+        <ul class="glist" id="glist"></ul>
+        <div class="ghint" data-i="gHint"></div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- AI -->
+  <section class="view" id="view-ai">
+    <div class="ai-wrap">
+      <div class="chat">
+        <div class="chat-log" id="chatLog"></div>
+        <div class="quick" id="quickAsk"></div>
+        <div class="chat-in">
+          <textarea id="chatInput" data-i-ph="chatPh"></textarea>
+          <button class="btn primary" id="chatSend" data-i="send"></button>
+        </div>
+      </div>
+      <aside class="gpanel">
+        <h4 data-i="photoTitle"></h4>
+        <label class="upload-box" for="photoFile">
+          <div class="ic">📷</div>
+          <p data-i="photoHint"></p>
+          <input type="file" id="photoFile" accept="image/*" capture="environment">
+        </label>
+        <img id="preview" alt="">
+        <div class="field" id="photoTypeField" style="display:none">
+          <label data-i="photoType"></label>
+          <select id="photoType"></select>
+        </div>
+        <button class="btn primary" id="photoAnalyze" style="width:100%;display:none" data-i="analyze"></button>
+        <div class="ghint" style="margin-top:12px" data-i="photoNote"></div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- 我的 -->
+  <section class="view" id="view-user"></section>
+</main>
+
+<script>
+/* ============================================================
+   0. 工具
+   ============================================================ */
+const $  = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const R  = (a,b) => Math.floor(Math.random()*(b-a+1))+a;
+const P  = a => a[Math.floor(Math.random()*a.length)];
+const R2 = n => Math.round(n*100)/100;
+const MINUS = '−';
+const F = n => (n<0?MINUS:'') + Math.abs(n);
+const NUM = n => Number.isInteger(n) ? String(n) : String(Math.round(n*100)/100);
+const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ============================================================
+   1. 多語言
+   ============================================================ */
+const T = {
+  zh:{
+    appTitle:'數學學習模擬器 Pro', appSub:'F1–F3 · 澳門在地化 · 24 個主題',
+    navHome:'首頁', navLearn:'學習', navExam:'專題練習', navGraph:'坐標系', navAI:'AI 答疑', navUser:'我的',
+    heroTitle:'選擇你的年級', heroSub:'滑鼠移到卡片上預覽 · 點擊進入',
+    quickTitle:'快速開始',
+    quickExam:'專題練習', quickGraph:'平面直角坐標系', quickAI:'AI 答疑', quickUser:'我的學習中心',
+    topicList:'課題列表',
+    login:'登入', logout:'登出', guest:'訪客',
+    examTitle:'專題練習', examSub:'選擇年級 → 課題 → 題量 → 難度，開始針對性訓練',
+    pickGrade:'① 選擇年級', pickTopic:'② 選擇課題', pickCount:'③ 題目數量', pickLevel:'④ 難度',
+    startExam:'開始練習', countUnit:'題',
+    lv1:'基礎', lv2:'進階', lv3:'挑戰', lvMix:'混合',
+    question:'第 {n} 題 / 共 {t} 題', submit:'提交答案', next:'下一題', finish:'查看結果',
+    inputPh:'輸入答案…', correct:'✅ 答對了！', wrong:'❌ 正確答案是：',
+    detailTitle:'詳細解析', yourAns:'你的答案', rightAns:'正確答案', noAns:'（未作答）',
+    resultTitle:'練習完成', score:'得分', accuracy:'正確率', timeUsed:'用時', seconds:'秒',
+    again:'再練一次', backSetup:'返回設定',
+    saveHint:'成績已保存到「我的學習」', loginToSave:'登入後可保存成績到錯題本與歷史記錄',
+    gList:'已繪製圖形', gHint:'操作提示：\n• 移動：拖曳畫布\n• 加點：點擊空白處\n• 線段：依序點兩點\n• 圓：先點圓心，再點圓周上一點\n• 刪除：點擊要刪除的物件\n• 滾輪／雙指可縮放',
+    addPoint:'加點', addSeg:'線段', addCircle:'圓', erase:'刪除', pan:'移動', zoomIn:'放大', zoomOut:'縮小', reset:'重置', clear:'清空',
+    none:'（空）',
+    chatPh:'輸入你的數學問題…', send:'傳送',
+    photoTitle:'拍照解題', photoHint:'點擊上傳／拍攝題目照片', photoType:'選擇題型', analyze:'開始分析',
+    photoNote:'⚠️ 本地演示模式：真實 OCR 與圖像識別需接入後端 API。此處根據你選擇的題型給出解題框架。',
+    ptEq1:'一元一次方程', ptEq2:'一元二次方程', ptFactor:'因式分解', ptGeo:'幾何證明／計算', ptStat:'統計與概率', ptOther:'其他',
+    myTitle:'我的學習中心',
+    tabHistory:'歷史練習', tabWrong:'錯題本', tabNotes:'筆記本',
+    noHistory:'還沒有練習記錄，去專題練習開始吧！', noWrong:'錯題本是空的，繼續保持！', noNotes:'還沒有筆記，點擊下方新增。',
+    newNote:'新增筆記', noteTitle:'標題', noteTag:'標籤（如：二次方程）', noteBody:'內容…', save:'保存', cancel:'取消', del:'刪除',
+    review:'查看詳情', mastered:'標記已掌握',
+    loginTitle:'登入你的帳號', loginSub:'本地演示帳號系統 · 資料只存在這台裝置',
+    signIn:'登入', signUp:'註冊', username:'用戶名', password:'密碼（至少 4 位）',
+    loginBtn:'登入', regBtn:'建立帳號', authErr:'用戶名或密碼不正確', authShort:'密碼至少 4 個字元', authExist:'用戶名已存在', regOk:'註冊成功，已自動登入',
+    welcome:'你好，{n}！'
+  },
+  en:{
+    appTitle:'Math Simulator Pro', appSub:'F1–F3 · Macau-themed · 24 topics',
+    navHome:'Home', navLearn:'Learn', navExam:'Practice', navGraph:'Graph', navAI:'AI Tutor', navUser:'Me',
+    heroTitle:'Choose Your Form', heroSub:'Hover a card to preview · Click to enter',
+    quickTitle:'Quick Start',
+    quickExam:'Topic Practice', quickGraph:'Cartesian Plane', quickAI:'AI Tutor', quickUser:'My Learning',
+    topicList:'Topics',
+    login:'Log in', logout:'Log out', guest:'Guest',
+    examTitle:'Topic Practice', examSub:'Form → Topic → Amount → Difficulty',
+    pickGrade:'① Form', pickTopic:'② Topic', pickCount:'③ Questions', pickLevel:'④ Difficulty',
+    startExam:'Start Practice', countUnit:'Q',
+    lv1:'Basic', lv2:'Intermediate', lv3:'Challenge', lvMix:'Mixed',
+    question:'Q{n} of {t}', submit:'Submit', next:'Next', finish:'See Results',
+    inputPh:'Your answer…', correct:'✅ Correct!', wrong:'❌ Correct answer: ',
+    detailTitle:'Worked Solution', yourAns:'Your answer', rightAns:'Correct answer', noAns:'(blank)',
+    resultTitle:'Practice Complete', score:'Score', accuracy:'Accuracy', timeUsed:'Time', seconds:'s',
+    again:'Try Again', backSetup:'Back to Setup',
+    saveHint:'Saved to My Learning', loginToSave:'Log in to save results to history & wrong-book',
+    gList:'Objects', gHint:'Controls:\n• Pan: drag canvas\n• Point: tap empty area\n• Segment: tap two points\n• Circle: tap centre then a rim point\n• Erase: tap an object\n• Pinch / wheel to zoom',
+    addPoint:'Point', addSeg:'Segment', addCircle:'Circle', erase:'Erase', pan:'Pan', zoomIn:'Zoom +', zoomOut:'Zoom −', reset:'Reset', clear:'Clear',
+    none:'(empty)',
+    chatPh:'Ask a maths question…', send:'Send',
+    photoTitle:'Photo Solver', photoHint:'Tap to upload / capture a question', photoType:'Question type', analyze:'Analyse',
+    photoNote:'⚠️ Local demo: real OCR needs a backend API. A solving framework is shown for the selected type.',
+    ptEq1:'Linear equation', ptEq2:'Quadratic equation', ptFactor:'Factorisation', ptGeo:'Geometry', ptStat:'Statistics & Probability', ptOther:'Other',
+    myTitle:'My Learning',
+    tabHistory:'History', tabWrong:'Wrong Book', tabNotes:'Notes',
+    noHistory:'No practice records yet.', noWrong:'Your wrong-book is empty. Keep it up!', noNotes:'No notes yet.',
+    newNote:'New Note', noteTitle:'Title', noteTag:'Tag (e.g. Quadratic)', noteBody:'Content…', save:'Save', cancel:'Cancel', del:'Delete',
+    review:'Details', mastered:'Mark Mastered',
+    loginTitle:'Log in', loginSub:'Local demo accounts · data stays on this device',
+    signIn:'Log in', signUp:'Sign up', username:'Username', password:'Password (min 4)',
+    loginBtn:'Log in', regBtn:'Create Account', authErr:'Incorrect username or password', authShort:'Password needs 4+ characters', authExist:'Username already exists', regOk:'Registered and logged in',
+    welcome:'Hi, {n}!'
+  }
+};
+function t(k, v){
+  let s = (T[state.lang] && T[state.lang][k]) || k;
+  if(v) for(const key in v) s = s.split('{'+key+'}').join(v[key]);
+  return s;
+}
+
+/* ============================================================
+   2. 本地存儲
+   ============================================================ */
+const DB = {
+  get users(){ try{return JSON.parse(localStorage.getItem('mms_users')||'{}')}catch(e){return {}} },
+  set users(v){ localStorage.setItem('mms_users', JSON.stringify(v)) },
+  cur(){ return localStorage.getItem('mms_session') || null },
+  setCur(u){ u ? localStorage.setItem('mms_session',u) : localStorage.removeItem('mms_session') },
+  data(u){
+    if(!u) return {history:[],wrong:[],notes:[]};
+    try{ return JSON.parse(localStorage.getItem('mms_d_'+u)) || {history:[],wrong:[],notes:[]} }
+    catch(e){ return {history:[],wrong:[],notes:[]} }
+  },
+  save(u,d){ if(u) localStorage.setItem('mms_d_'+u, JSON.stringify(d)) }
+};
+function hash(pw){ let h=0; for(let i=0;i<pw.length;i++){h=(h*31+pw.charCodeAt(i))>>>0} return 'h'+h.toString(36) }
+
+/* ============================================================
+   3. 狀態
+   ============================================================ */
+const state = {
+  lang:'zh',
+  view:'home',
+  user: DB.cur(),
+  learnGrade:'f1',
+  learnTopic:'f1-1',
+  userTab:'history',
+  exam:null
+};
+
+/* ============================================================
+   4. 課程講解內容（極詳細版）
+   ============================================================ */
+const GRADE_META = {
+  f1:{name:{zh:'中一 F1',en:'Form 1'}, color:'#0ea5e9',
+      desc:{zh:'有向數、代數、百分數、比例、估算、角與平行線、周界面積、統計',en:'Directed numbers, algebra, percentages, ratio, angles, area, statistics'}},
+  f2:{name:{zh:'中二 F2',en:'Form 2'}, color:'#8b5cf6',
+      desc:{zh:'指數律、多項式、因式分解、不等式、畢氏定理、四邊形、柱體體積、概率',en:'Indices, polynomials, factorisation, inequalities, Pythagoras, quadrilaterals, volume, probability'}},
+  f3:{name:{zh:'中三 F3',en:'Form 3'}, color:'#f97316',
+      desc:{zh:'二次方程、二次函數、反比例、直線方程、相似三角形、三角比、圓、集中趨勢',en:'Quadratics, quadratic graphs, inverse variation, straight lines, similarity, trigonometry, circles, central tendency'}}
+};
+
+const TOPICS = {
+  f1:[
+    {id:'f1-1', icon:'±', title:{zh:'有向數',en:'Directed Numbers'}},
+    {id:'f1-2', icon:'x', title:{zh:'代數式與一元一次方程',en:'Algebra & Linear Equations'}},
+    {id:'f1-3', icon:'%', title:{zh:'百分數',en:'Percentages'}},
+    {id:'f1-4', icon:'∶', title:{zh:'比與率',en:'Ratio & Rate'}},
+    {id:'f1-5', icon:'≈', title:{zh:'近似與估算',en:'Approximation & Estimation'}},
+    {id:'f1-6', icon:'∠', title:{zh:'角與平行線',en:'Angles & Parallel Lines'}},
+    {id:'f1-7', icon:'▭', title:{zh:'周界與面積',en:'Perimeter & Area'}},
+    {id:'f1-8', icon:'📌', title:{zh:'統計圖與平均數',en:'Charts & Mean'}}
+  ],
+  f2:[
+    {id:'f2-1', icon:'aⁿ', title:{zh:'指數律',en:'Index Laws'}},
+    {id:'f2-2', icon:'(x)', title:{zh:'多項式與恒等式',en:'Polynomials & Identities'}},
+    {id:'f2-3', icon:'⧉', title:{zh:'因式分解',en:'Factorisation'}},
+    {id:'f2-4', icon:'<', title:{zh:'一元一次不等式',en:'Linear Inequalities'}},
+    {id:'f2-5', icon:'△', title:{zh:'畢氏定理',en:"Pythagoras' Theorem"}},
+    {id:'f2-6', icon:'⬡', title:{zh:'四邊形的性質',en:'Quadrilaterals'}},
+    {id:'f2-7', icon:'📦', title:{zh:'柱體的體積',en:'Volume of Prisms'}},
+    {id:'f2-8', icon:'🔢', title:{zh:'概率初步',en:'Probability'}}
+  ],
+  f3:[
+    {id:'f3-1', icon:'x²', title:{zh:'一元二次方程',en:'Quadratic Equations'}},
+    {id:'f3-2', icon:'∪', title:{zh:'二次函數的圖像',en:'Quadratic Graphs'}},
+    {id:'f3-3', icon:'1/x', title:{zh:'反比例',en:'Inverse Variation'}},
+    {id:'f3-4', icon:'╱', title:{zh:'直線方程',en:'Straight Lines'}},
+    {id:'f3-5', icon:'△', title:{zh:'相似三角形',en:'Similar Triangles'}},
+    {id:'f3-6', icon:'sin', title:{zh:'三角比',en:'Trigonometric Ratios'}},
+    {id:'f3-7', icon:'○', title:{zh:'圓的性質',en:'Circle Properties'}},
+    {id:'f3-8', icon:'x̄', title:{zh:'集中趨勢量度',en:'Central Tendency'}}
+  ]
+};
+
+/* --- 每個課題的詳細講解（zh / en） --- */
+const CONTENT = {
+/* ================= F1 ================= */
+'f1-1':{
+zh:`<h3>一、甚麼是有向數？</h3>
+<p>「有向數」就是帶有正負號的數，用來表示<b>相反方向的量</b>。例如温度 +8 °C 與 −3 °C、銀行存款 +500 元與欠款 −500 元。正數前可省略「+」號，負數必須寫上「−」號。</p>
+<h3>二、數線與大小比較</h3>
+<p>在數線上，<b>右邊的數永遠大於左邊的數</b>。因此任何負數都小於 0，也小於任何正數；而兩個負數比較時，<b>絕對值較大的反而較小</b>。</p>
+<div class="example"><b>例：</b>比較 −7 與 −3。<br>|−7| = 7，|−3| = 3。因為 7 &gt; 3，所以 <b>−7 &lt; −3</b>。</div>
+<h3>三、加法法則</h3>
+<ul>
+<li><b>同號相加</b>：取相同的符號，把絕對值相加。<br>例：(−4) + (−6) = −(4+6) = −10</li>
+<li><b>異號相加</b>：取<b>絕對值較大者</b>的符號，再把絕對值相減。<br>例：(−9) + 4 = −(9−4) = −5；(−3) + 8 = +(8−3) = +5</li>
+<li><b>互為相反數相加</b>：a + (−a) = 0</li>
+</ul>
+<h3>四、減法法則</h3>
+<p>減去一個數，等於<b>加上它的相反數</b>：</p>
+<div class="formula">a − b = a + (−b)</div>
+<div class="example"><b>例：</b>5 − (−3) = 5 + 3 = 8；(−2) − 6 = (−2) + (−6) = −8</div>
+<h3>五、乘法與除法法則</h3>
+<ul>
+<li><b>同號得正</b>：(+3) × (+4) = +12；(−3) × (−4) = +12</li>
+<li><b>異號得負</b>：(+3) × (−4) = −12；(−12) ÷ (+3) = −4</li>
+<li><b>任何數乘 0 都是 0</b></li>
+</ul>
+<div class="tip">💡 口訣：「同號得正、異號得負」。三個負數相乘得負，四個負數相乘得正——<b>負號個數為偶數時結果為正</b>。</div>
+<h3>六、混合運算順序</h3>
+<p>先括號 → 先乘除後加減 → 由左至右。有嵌套括號時由內向外計算。</p>
+<div class="example"><b>例：</b>計算 (−2) × [3 − (−5)] ÷ (−4)<br>= (−2) × (3 + 5) ÷ (−4)<br>= (−2) × 8 ÷ (−4)<br>= (−16) ÷ (−4) = <b>4</b></div>
+<div class="warn">⚠️ <b>常見錯誤</b>：把 −3² 當成 (−3)²。前者是 −(3²) = −9，後者是 (−3)×(−3) = 9。指數只作用在緊貼的底數上。</div>
+<div class="tip">🇲🇴 <b>澳門情境</b>：澳門旅遊塔地面高度為 0 m，觀光層約 +223 m，地庫停車場約 −3 m。觀光層與停車場的高度差 = 223 − (−3) = 226 m。</div>`,
+en:`<h3>1. What are directed numbers?</h3>
+<p>Numbers with a sign (+ or −) that represent quantities in opposite directions, e.g. +8 °C / −3 °C, or +$500 / −$500.</p>
+<h3>2. Number line</h3>
+<p>Numbers to the right are greater. Every negative number is less than 0 and less than any positive number. Between two negatives, the one with the <b>larger absolute value is smaller</b>.</p>
+<div class="example">Compare −7 and −3. |−7| = 7 &gt; |−3| = 3, so <b>−7 &lt; −3</b>.</div>
+<h3>3. Addition</h3>
+<ul>
+<li><b>Same signs</b>: keep the sign, add absolute values. (−4) + (−6) = −10</li>
+<li><b>Different signs</b>: take the sign of the larger absolute value and subtract. (−9) + 4 = −5</li>
+<li>a + (−a) = 0</li>
+</ul>
+<h3>4. Subtraction</h3>
+<div class="formula">a − b = a + (−b)</div>
+<div class="example">5 − (−3) = 8; (−2) − 6 = −8</div>
+<h3>5. Multiplication & division</h3>
+<ul>
+<li>Same signs → positive: (−3) × (−4) = +12</li>
+<li>Different signs → negative: (−12) ÷ 3 = −4</li>
+<li>Any number × 0 = 0</li>
+</ul>
+<div class="tip">💡 Mnemonic: "same → plus, different → minus". An even number of negative factors gives a positive result.</div>
+<h3>6. Order of operations</h3>
+<p>Brackets → × ÷ before + − → left to right.</p>
+<div class="example">(−2) × [3 − (−5)] ÷ (−4) = (−2) × 8 ÷ (−4) = 4</div>
+<div class="warn">⚠️ Common mistake: −3² = −9, but (−3)² = 9.</div>
+<div class="tip">🇲🇴 Macau: ground 0 m, observation deck +223 m, basement car park −3 m. Difference = 226 m.</div>`},
+
+'f1-2':{
+zh:`<h3>一、代數式的意義</h3>
+<p>用字母代表未知數（或可變的數）所組成的式子，叫做<b>代數式</b>。例如 3x + 2 表示「3 乘以 x 再加 2」。</p>
+<p><b>約定寫法</b>：3 × x 寫成 3x；1 × x 寫成 x；x × y 寫成 xy；x ÷ 4 寫成 x/4。</p>
+<h3>二、代入求值</h3>
+<div class="example"><b>例：</b>當 x = 4 時，求 2x² − 5x + 1 的值。<br>= 2(16) − 5(4) + 1 = 32 − 20 + 1 = <b>13</b></div>
+<div class="warn">⚠️ 代入負數時必須加括號：當 x = −2，x² 要寫成 (−2)² = 4，不能寫成 −2²。</div>
+<h3>三、同類項與合併</h3>
+<p>字母部分完全相同的項叫<b>同類項</b>，可以合併係數。</p>
+<div class="example"><b>例：</b>化簡 4x + 3y − 2x + 5y = (4x − 2x) + (3y + 5y) = <b>2x + 8y</b></div>
+<h3>四、一元一次方程</h3>
+<p>只含一個未知數、未知數的最高次數為 1 的方程，叫做<b>一元一次方程</b>，標準形如 ax + b = 0（a ≠ 0）。</p>
+<h4>解方程的三步曲</h4>
+<ol>
+<li><b>去括號</b>（如有）</li>
+<li><b>移項</b>：把含 x 的項移到等號一邊，常數移到另一邊（<b>移項要變號</b>）</li>
+<li><b>化係數為 1</b>：兩邊同除以 x 的係數</li>
+</ol>
+<div class="example"><b>例 1：</b>解 5x − 7 = 18<br>5x = 18 + 7 = 25<br>x = 25 ÷ 5 = <b>5</b></div>
+<div class="example"><b>例 2（含括號）：</b>解 3(x − 2) = 2x + 5<br>3x − 6 = 2x + 5<br>3x − 2x = 5 + 6<br><b>x = 11</b></div>
+<div class="example"><b>例 3（兩邊都有 x）：</b>解 4x + 3 = 6x − 9<br>3 + 9 = 6x − 4x<br>12 = 2x → <b>x = 6</b></div>
+<div class="warn">⚠️ <b>常見錯誤</b>：移項忘記變號；去括號時漏乘負號（例如 −2(x − 3) = −2x + 6，不是 −2x − 6）。</div>
+<h3>五、驗算</h3>
+<p>把求得的解代回原方程，若左右兩邊相等，則答案正確。這是<b>必做</b>的步驟。</p>
+<div class="tip">🇲🇴 <b>澳門情境</b>：一盒杏仁餅 x 元，買 3 盒加 5 元運費，共付 110 元 → 3x + 5 = 110 → 3x = 105 → x = 35 元。</div>`,
+en:`<h3>1. Algebraic expressions</h3>
+<p>Use letters for unknowns: 3x + 2 means "3 times x plus 2". Conventions: 1x → x, x × y → xy, x ÷ 4 → x/4.</p>
+<h3>2. Substitution</h3>
+<div class="example">If x = 4, 2x² − 5x + 1 = 2(16) − 5(4) + 1 = 13</div>
+<div class="warn">⚠️ Always bracket negatives: if x = −2, write (−2)² = 4, not −2².</div>
+<h3>3. Like terms</h3>
+<div class="example">4x + 3y − 2x + 5y = 2x + 8y</div>
+<h3>4. Linear equations in one unknown</h3>
+<ol>
+<li>Remove brackets</li>
+<li>Move terms (change sign when crossing the equals sign)</li>
+<li>Divide both sides by the coefficient of x</li>
+</ol>
+<div class="example">5x − 7 = 18 → 5x = 25 → <b>x = 5</b></div>
+<div class="example">3(x − 2) = 2x + 5 → 3x − 6 = 2x + 5 → <b>x = 11</b></div>
+<div class="example">4x + 3 = 6x − 9 → 12 = 2x → <b>x = 6</b></div>
+<div class="warn">⚠️ Common errors: forgetting to change signs when moving terms; missing the negative sign when expanding −2(x − 3) = −2x + 6.</div>
+<h3>5. Checking</h3>
+<p>Substitute your answer back into the original equation — always verify.</p>
+<div class="tip">🇲🇴 Macau: 3 boxes of almond cakes at $x plus $5 delivery = $110 → x = $35.</div>`},
+
+'f1-3':{
+zh:`<h3>一、百分數的意義</h3>
+<p>「百分數」是把一個數寫成「分母是 100 的分數」，符號為 %。</p>
+<div class="formula">p% = p ÷ 100 = p/100</div>
+<p>例如 25% = 25/100 = 0.25；0.7 = 70%；3/5 = 60%。</p>
+<h3>二、三種基本題型</h3>
+<h4>① 求某數的 p%</h4>
+<div class="formula">所求 = 該數 × p%</div>
+<div class="example"><b>例：</b>求 240 的 35%。<br>240 × 35% = 240 × 0.35 = <b>84</b></div>
+<h4>② 求「某數是另一個數的百分之幾」</h4>
+<div class="formula">百分數 = 部分 ÷ 全部 × 100%</div>
+<div class="example"><b>例：</b>一班 40 人中有 26 人及格，及格率是多少？<br>26 ÷ 40 × 100% = <b>65%</b></div>
+<h4>③ 已知部分及百分數，求全部</h4>
+<div class="formula">全部 = 部分 ÷ 百分數</div>
+<div class="example"><b>例：</b>某校 15% 的學生戴眼鏡，共 96 人，全校有多少人？<br>96 ÷ 0.15 = <b>640 人</b></div>
+<h3>三、百分變化</h3>
+<div class="formula">百分變化 = (新值 − 舊值) ÷ 舊值 × 100%</div>
+<p>結果為正表示<b>增加</b>，為負表示<b>減少</b>。</p>
+<div class="example"><b>例：</b>某商品由 400 元加價到 460 元，求百分增加。<br>(460 − 400) ÷ 400 × 100% = 60 ÷ 400 × 100% = <b>15%</b></div>
+<h3>四、折扣與售價</h3>
+<div class="formula">售價 = 原價 × 折扣率</div>
+<p>「八折」= 原價的 80%；「七五折」= 原價的 75%。</p>
+<div class="example"><b>例：</b>原價 480 元的衣服打七折 → 480 × 0.7 = <b>336 元</b></div>
+<h3>五、增加／減少的連續變化</h3>
+<p>先加價 p% 再減價 p%，<b>不會回到原價</b>，因為兩次的基數不同。</p>
+<div class="example"><b>例：</b>100 元先加價 20% 得 120 元，再減價 20% 得 120 × 0.8 = 96 元，比原價少 4 元。</div>
+<div class="warn">⚠️ <b>常見錯誤</b>：把「增加了 20%」誤解為「增加到 20%」。增加 20% 後是原來的 120%。</div>
+<div class="tip">🇲🇴 <b>澳門情境</b>：格蘭披治大賽車門票早鳥 85 折，原價 400 元 → 售價 400 × 0.85 = 340 元，省下 60 元。</div>`,
+en:`<h3>1. Meaning</h3>
+<div class="formula">p% = p ÷ 100</div>
+<p>25% = 0.25, 0.7 = 70%, 3/5 = 60%.</p>
+<h3>2. Three basic types</h3>
+<h4>① p% of a number</h4>
+<div class="example">35% of 240 = 240 × 0.35 = <b>84</b></div>
+<h4>② What percentage is A of B?</h4>
+<div class="example">26 out of 40 = 26 ÷ 40 × 100% = <b>65%</b></div>
+<h4>③ Finding the whole</h4>
+<div class="example">15% of students = 96 → total = 96 ÷ 0.15 = <b>640</b></div>
+<h3>3. Percentage change</h3>
+<div class="formula">Change = (new − old) ÷ old × 100%</div>
+<div class="example">From $400 to $460: 60 ÷ 400 × 100% = <b>15% increase</b></div>
+<h3>4. Discount</h3>
+<div class="formula">Selling price = marked price × discount rate</div>
+<div class="example">$480 at 30% off → 480 × 0.7 = <b>$336</b></div>
+<h3>5. Successive changes</h3>
+<p>+20% then −20% does <b>not</b> return to the original: 100 → 120 → 96.</p>
+<div class="warn">⚠️ "Increased by 20%" ≠ "increased to 20%".</div>
+<div class="tip">🇲🇴 Macau: Grand Prix tickets at 85% of $400 = $340.</div>`},
+
+'f1-4':{
+zh:`<h3>一、比的意義</h3>
+<p>比 a : b 表示兩個量的<b>相對大小</b>關係。a 叫前項，b 叫後項（b ≠ 0）。</p>
+<p><b>化簡比</b>：把前後項同除以它們的最大公因數，使兩項互質。</p>
+<div class="example"><b>例：</b>化簡 24 : 36 → 同除以 12 → <b>2 : 3</b></div>
+<h3>二、比例與交叉相乘</h3>
+<p>若 a : b = c : d，則：</p>
+<div class="formula">a × d = b × c（外項積 = 內項積）</div>
+<div class="example"><b>例：</b>解 3 : 4 = x : 20<br>4x = 3 × 20 = 60 → <b>x = 15</b></div>
+<h3>三、按比例分配</h3>
+<p>把總量按 a : b : c 分配，先求<b>總份數</b>，再求每份的量。</p>
+<div class="example"><b>例：</b>把 480 元按 3 : 5 分給甲、乙。<br>總份數 = 3 + 5 = 8<br>每份 = 480 ÷ 8 = 60 元<br>甲 = 3 × 60 = <b>180 元</b>，乙 = 5 × 60 = <b>300 元</b></div>
+<h3>四、率</h3>
+<p>「率」是帶單位的比，表示兩個不同單位的量之間的關係。</p>
+<div class="formula">速度 = 距離 ÷ 時間　　密度 = 質量 ÷ 體積　　單價 = 總價 ÷ 數量</div>
+<div class="example"><b>例：</b>汽車 2.5 小時行 180 km，平均速度 = 180 ÷ 2.5 = <b>72 km/h</b></div>
+<h3>五、連比</h3>
+<p>已知 a : b 和 b : c，可求 a : b : c。方法：把 b 的份數化為相同。</p>
+<div class="example"><b>例：</b>a : b = 2 : 3，b : c = 4 : 5。把 b 化成 12 → a : b = 8 : 12，b : c = 12 : 15，所以 <b>a : b : c = 8 : 12 : 15</b></div>
+<div class="warn">⚠️ <b>常見錯誤</b>：化簡比時只除一邊；單位不同時直接比較（例如 30 cm : 1 m 要先化成 30 : 100 = 3 : 10）。</div>
+<div class="tip">🇲🇴 <b>澳門情境</b>：關閘到氹仔約 12 km，巴士行 30 分鐘（0.5 小時），平均速度 = 12 ÷ 0.5 = 24 km/h。</div>`,
+en:`<h3>1. Ratio</h3>
+<p>a : b compares two quantities. Simplify by dividing both terms by their HCF.</p>
+<div class="example">24 : 36 = <b>2 : 3</b></div>
+<h3>2. Proportion</h3>
+<div class="formula">If a : b = c : d then ad = bc</div>
+<div class="example">3 : 4 = x : 20 → 4x = 60 → <b>x = 15</b></div>
+<h3>3. Sharing in a ratio</h3>
+<div class="example">$480 in the ratio 3 : 5 → 8 parts, each $60 → <b>$180 and $300</b></div>
+<h3>4. Rate</h3>
+<div class="formula">speed = distance ÷ time; density = mass ÷ volume; unit price = cost ÷ quantity</div>
+<div class="example">180 km in 2.5 h → <b>72 km/h</b></div>
+<h3>5. Continued ratio</h3>
+<div class="example">a : b = 2 : 3, b : c = 4 : 5 → a : b : c = <b>8 : 12 : 15</b></div>
+<div class="warn">⚠️ Convert to the same unit first: 30 cm : 1 m = 3 : 10.</div>
+<div class="tip">🇲🇴 Macau: Border Gate to Taipa ≈ 12 km in 0.5 h → 24 km/h.</div>`},
+
+'f1-5':{
+zh:`<h3>一、四捨五入</h3>
+<p>要保留某一位時，看它的<b>下一位數</b>：</p>
+<ul>
+<li>下一位 ≥ 5 → <b>進一</b></li>
+<li>下一位 &lt; 5 → <b>捨去</b></li>
+</ul>
+<div class="example"><b>例：</b>把 3.847 四捨五入至小數後兩位。<br>看第三位小數 7 ≥ 5，所以進一 → <b>3.85</b></div>
+<h3>二、有效數字</h3>
+<p>由<b>第一個非零數字</b>開始數，數到最後一位（包括中間和末尾的 0）。</p>
+<div class="example">
+<b>例：</b>0.004560 的有效數字<br>
+由 4 開始數：4、5、6、0 → <b>4 個有效數字</b>（最後的 0 是有效數字）<br>
+而 0.00456 只有 3 個有效數字。
+</div>
+<h3>三、科學記數法</h3>
+<div class="formula">a × 10ⁿ，其中 1 ≤ a &lt; 10，n 為整數</div>
+<div class="example"><b>例：</b>45 600 000 = 4.56 × 10⁷；0.00032 = 3.2 × 10⁻⁴</div>
+<h3>四、估算</h3>
+<p>先把各數取<b>一位或兩位有效數字</b>的近似值，再計算，用來快速檢查答案是否合理。</p>
+<div class="example"><b>例：</b>估算 498 × 21<br>≈ 500 × 20 = <b>10 000</b>（實際答案 10 458，數量級吻合）</div>
+<div class="example"><b>例：</b>估算 587 ÷ 19<br>≈ 600 ÷ 20 = <b>30</b>（實際 ≈ 30.9）</div>
+<h3>五、絕對誤差與相對誤差</h3>
+<div class="formula">絕對誤差 = |近似值 − 真值|　　相對誤差 = 絕對誤差 ÷ 真值 × 100%</div>
+<div class="warn">⚠️ <b>常見錯誤</b>：把 0.0305 有效數字數成 5 個。前面兩個 0 不算，由 3 開始數，共 <b>3 個</b>有效數字。</div>
+<div class="tip">🇲🇴 <b>應用</b>：裝修報價、購物找續時，先估算可以避免嚴重錯誤。</div>`,
+en:`<h3>1. Rounding off</h3>
+<p>Look at the next digit: ≥ 5 round up, &lt; 5 round down.</p>
+<div class="example">3.847 to 2 d.p. → <b>3.85</b></div>
+<h3>2. Significant figures</h3>
+<p>Count from the first non-zero digit to the last stated digit (including trailing zeros).</p>
+<div class="example">0.004560 has <b>4 s.f.</b>; 0.00456 has <b>3 s.f.</b></div>
+<h3>3. Scientific notation</h3>
+<div class="formula">a × 10ⁿ, 1 ≤ a &lt; 10</div>
+<div class="example">45 600 000 = 4.56 × 10⁷; 0.00032 = 3.2 × 10⁻⁴</div>
+<h3>4. Estimation</h3>
+<div class="example">498 × 21 ≈ 500 × 20 = <b>10 000</b> (actual 10 458)</div>
+<h3>5. Errors</h3>
+<div class="formula">absolute error = |approx − true|; relative error = absolute error ÷ true × 100%</div>
+<div class="warn">⚠️ Leading zeros are not significant: 0.0305 has 3 s.f.</div>`},
+
+'f1-6':{
+zh:`<h3>一、角的分類</h3>
+<ul>
+<li><b>銳角</b>：0° &lt; θ &lt; 90°</li>
+<li><b>直角</b>：θ = 90°</li>
+<li><b>鈍角</b>：90° &lt; θ &lt; 180°</li>
+<li><b>平角</b>：θ = 180°</li>
+<li><b>反角</b>：180° &lt; θ &lt; 360°</li>
+</ul>
+<h3>二、兩角關係</h3>
+<ul>
+<li><b>互補角</b>：兩角相加 = 90°（組成直角）</li>
+<li><b>補角</b>：兩角相加 = 180°（組成直線）</li>
+<li><b>對頂角</b>：兩直線相交形成，對頂角相等</li>
+</ul>
+<h3>三、三角形內角和</h3>
+<div class="formula">∠A + ∠B + ∠C = 180°</div>
+<div class="example"><b>例：</b>三角形兩個內角為 45° 和 68°，第三角 = 180 − 45 − 68 = <b>67°</b></div>
+<h4>三角形外角定理</h4>
+<p>三角形的<b>外角</b>等於<b>兩個不相鄰內角之和</b>。</p>
+<div class="example"><b>例：</b>不相鄰兩內角為 35° 和 80°，則外角 = 35 + 80 = <b>115°</b></div>
+<h3>四、平行線的角</h3>
+<p>設 l₁ ∥ l₂，被截線 m 所截：</p>
+<ul>
+<li><b>同位角</b>相等（位置相同，如都在「左上」）</li>
+<li><b>內錯角</b>相等（夾在兩平行線之間、在截線兩側）</li>
+<li><b>同旁內角</b>互補（夾在兩平行線之間、在截線同側，相加 180°）</li>
+</ul>
+<div class="example"><b>例：</b>兩平行線被截，一個內錯角為 65°，另一個內錯角也是 <b>65°</b>；與之同旁內角為 <b>115°</b>。</div>
+<h3>五、多邊形內角和</h3>
+<div class="formula">n 邊形內角和 = (n − 2) × 180°</div>
+<div class="formula">正 n 邊形每個內角 = (n − 2) × 180° ÷ n</div>
+<div class="formula">多邊形外角和 = 360°（任何凸多邊形）</div>
+<div class="example"><b>例：</b>正五邊形每個內角 = (5 − 2) × 180° ÷ 5 = 540 ÷ 5 = <b>108°</b></div>
+<div class="warn">⚠️ <b>常見錯誤</b>：把「同旁內角互補」記成「相等」；把「內錯角」與「同位角」的位置搞混。</div>
+<div class="tip">🇲🇴 <b>澳門情境</b>：大三巴牌坊的石階與地面、欄杆形成平行線，可用同位角原理檢查是否水平。</div>`,
+en:`<h3>1. Types of angles</h3>
+<p>Acute &lt;90°, right =90°, obtuse 90°–180°, straight =180°, reflex 180°–360°.</p>
+<h3>2. Angle pairs</h3>
+<ul>
+<li>Complementary: sum = 90°</li>
+<li>Supplementary: sum = 180°</li>
+<li>Vertically opposite angles are equal</li>
+</ul>
+<h3>3. Triangle angle sum</h3>
+<div class="formula">∠A + ∠B + ∠C = 180°</div>
+<div class="example">45° and 68° → third angle = <b>67°</b></div>
+<p><b>Exterior angle theorem</b>: an exterior angle equals the sum of the two opposite interior angles.</p>
+<div class="example">35° + 80° → exterior angle = <b>115°</b></div>
+<h3>4. Parallel lines</h3>
+<ul>
+<li><b>Corresponding angles</b> are equal</li>
+<li><b>Alternate angles</b> are equal</li>
+<li><b>Co-interior angles</b> are supplementary</li>
+</ul>
+<div class="example">An alternate angle of 65° pairs with a co-interior angle of <b>115°</b>.</div>
+<h3>5. Polygons</h3>
+<div class="formula">Interior angle sum = (n − 2) × 180°</div>
+<div class="formula">Regular n-gon interior angle = (n − 2) × 180° ÷ n</div>
+<div class="formula">Exterior angle sum = 360°</div>
+<div class="example">Regular pentagon: 540 ÷ 5 = <b>108°</b></div>
+<div class="warn">⚠️ Co-interior angles are supplementary (not equal).</div>`},
+
+'f1-7':{
+zh:`<h3>一、周界</h3>
+<p>圖形<b>邊界一圈的總長</b>稱為周界。周界是長度，單位是 cm、m 等。</p>
+<h3>二、面積公式總表</h3>
+<h4>長方形</h4>
+<div class="formula">面積 = 長 × 闊　　周界 = 2 × (長 + 闊)</div>
+<h4>正方形</h4>
+<div class="formula">面積 = 邊長²　　周界 = 4 × 邊長</div>
+<h4>三角形</h4>
+<div class="formula">面積 = 底 × 高 ÷ 2</div>
+<p>注意：<b>高必須垂直於底</b>，不是斜邊的長度。</p>
+<h4>平行四邊形</h4>
+<div class="formula">面積 = 底 × 高</div>
+<h4>梯形</h4>
+<div class="formula">面積 = (上底 + 下底) × 高 ÷ 2</div>
+<h4>圓</h4>
+<div class="formula">面積 = πr²　　周界（圓周）= 2πr = πd</div>
+<p>π ≈ 3.14 或 22/7，依題目要求取近似值。</p>
+<h3>三、組合圖形</h3>
+<p>把複雜圖形<b>分割</b>成幾個基本圖形，分別求面積後相加；或<b>補形</b>後用大圖形減去多餘部分。</p>
+<div class="example"><b>例：</b>半徑 6 cm 的圓，面積 = π × 6² = 36π ≈ <b>113.1 cm²</b>（π ≈ 3.1416）。<br>周界 = 2π × 6 ≈ 37.7 cm。</div>
+<div class="example"><b>例（分割）：</b>長 10 cm、闊 6 cm 的長方形，右下角挖去一個底 4 cm、高 3 cm 的三角形。<br>面積 = 10 × 6 − 4 × 3 ÷ 2 = 60 − 6 = <b>54 cm²</b></div>
+<div class="warn">⚠️ <b>常見錯誤</b>：求三角形面積時用了斜邊當高；求圓面積時用了直徑 r = d（應為 r = d ÷ 2）。</div>
+<div class="tip">🇲🇴 <b>澳門情境</b>：議事亭前地的波浪碎石地磚，可把它分割成長方形與三角形，估算整片廣場的鋪磚面積。</div>`,
+en:`<h3>1. Perimeter</h3>
+<p>Total length around the boundary, measured in cm, m, etc.</p>
+<h3>2. Area formulas</h3>
+<div class="formula">Rectangle: A = l × w, P = 2(l + w)</div>
+<div class="formula">Square: A = s², P = 4s</div>
+<div class="formula">Triangle: A = base × height ÷ 2</div>
+<p>The height must be <b>perpendicular</b> to the base.</p>
+<div class="formula">Parallelogram: A = base × height</div>
+<div class="formula">Trapezium: A = (a + b) × h ÷ 2</div>
+<div class="formula">Circle: A = πr², C = 2πr = πd</div>
+<h3>3. Composite figures</h3>
+<p>Split the shape into basic figures, or subtract the extra parts from a larger figure.</p>
+<div class="example">Circle r = 6 cm: A = 36π ≈ <b>113.1 cm²</b>; C ≈ 37.7 cm</div>
+<div class="example">10 × 6 rectangle minus a 4 × 3 triangle = 60 − 6 = <b>54 cm²</b></div>
+<div class="warn">⚠️ Use the perpendicular height, not the slant side. For a circle, r = d ÷ 2.</div>
+<div class="tip">🇲🇴 Macau: split the wave-pattern pavement at Senado Square into rectangles and triangles.</div>`},
+
+'f1-8':{
+zh:`<h3>一、平均數（算術平均數）</h3>
+<div class="formula">平均數 = 所有數據之和 ÷ 數據個數</div>
+<div class="example"><b>例：</b>五位同學測驗分數為 72、85、90、68、80。<br>總和 = 395，平均 = 395 ÷ 5 = <b>79 分</b></div>
+<p><b>性質</b>：每個數據與平均數之差的總和為 0；平均數容易受<b>極端值</b>影響。</p>
+<h3>二、中位數</h3>
+<p>把數據<b>由小到大排列</b>後：</p>
+<ul>
+<li>數據個數為<b>奇數</b>：中位數為正中間的那個數</li>
+<li>數據個數為<b>偶數</b>：中位數為中間兩個數的平均數</li>
+</ul>
+<div class="example"><b>例：</b>2, 3, 3, 5, 9 → 中位數 = <b>3</b><br>2, 3, 5, 9 → 中位數 = (3 + 5) ÷ 2 = <b>4</b></div>
+<h3>三、眾數</h3>
+<p>出現<b>次數最多</b>的數據。可能沒有眾數，也可能有多個眾數。</p>
+<div class="example"><b>例：</b>1, 2, 2, 3, 3, 3, 4 → 眾數 = <b>3</b>（出現 3 次）</div>
+<h3>四、三者的比較</h3>
+<ul>
+<li><b>平均數</b>：用到全部數據，但受極端值影響大</li>
+<li><b>中位數</b>：不受極端值影響，適合有極端值的數據</li>
+<li><b>眾數</b>：反映最常出現的情況，適合分類數據</li>
+</ul>
+<h3>五、統計圖</h3>
+<ul>
+<li><b>棒形圖</b>：比較不同類別的數量</li>
+<li><b>折線圖</b>：顯示數據隨時間的變化趨勢</li>
+<li><b>圓形圖</b>：顯示各部分佔整體的比例（各部分百分比之和 = 100%，圓心角之和 = 360°）</li>
+</ul>
+<div class="example"><b>例（圓形圖）：</b>某部分佔 25%，其圓心角 = 360° × 25% = <b>90°</b></div>
+<div class="warn">⚠️ <b>常見錯誤</b>：求中位數前忘記排序；圓形圖的百分比沒有加總到 100%。</div>
+<div class="tip">🇲🇴 <b>澳門情境</b>：用圓形圖表示澳門旅客的來源地比例（內地、香港、台灣、其他），各扇形百分比之和必須是 100%。</div>`,
+en:`<h3>1. Mean</h3>
+<div class="formula">Mean = sum of values ÷ number of values</div>
+<div class="example">72, 85, 90, 68, 80 → 395 ÷ 5 = <b>79</b></div>
+<p>The mean uses all data but is strongly affected by extreme values.</p>
+<h3>2. Median</h3>
+<p>Arrange the data in order. Odd count → middle value; even count → mean of the two middle values.</p>
+<div class="example">2, 3, 3, 5, 9 → <b>3</b>; 2, 3, 5, 9 → <b>4</b></div>
+<h3>3. Mode</h3>
+<p>The most frequent value. There may be none, or several.</p>
+<div class="example">1, 2, 2, 3, 3, 3, 4 → mode = <b>3</b></div>
+<h3>4. Comparison</h3>
+<ul>
+<li>Mean: uses all data, affected by extremes</li>
+<li>Median: robust to extremes</li>
+<li>Mode: shows the most common value</li>
+</ul>
+<h3>5. Charts</h3>
+<p>Bar chart (compare), line graph (trend), pie chart (proportion — sectors sum to 100% and 360°).</p>
+<div class="example">A 25% sector → 360° × 25% = <b>90°</b></div>
+<div class="warn">⚠️ Sort the data before finding the median.</div>
+<div class="tip">🇲🇴 Macau: a pie chart of visitor origins must sum to 100%.</div>`},
+
+/* ================= F2 ================= */
+'f2-1':{
+zh:`<h3>一、指數的意義</h3>
+<p>aⁿ 表示 a 自乘 n 次：aⁿ = a × a × … × a（共 n 個）。a 叫底數，n 叫指數。</p>
+<div class="example">2⁵ = 2 × 2 × 2 × 2 × 2 = <b>32</b></div>
+<h3>二、五條指數律</h3>
+<div class="formula">① a<sup>m</sup> × a<sup>n</sup> = a<sup>m+n</sup>（同底相乘，指數相加）</div>
+<div class="formula">② a<sup>m</sup> ÷ a<sup>n</sup> = a<sup>m−n</sup>（同底相除，指數相減）</div>
+<div class="formula">③ (a<sup>m</sup>)<sup>n</sup> = a<sup>mn</sup>（冪的冪，指數相乘）</div>
+<div class="formula">④ (ab)<sup>n</sup> = a<sup>n</sup>b<sup>n</sup>；(a/b)<sup>n</sup> = a<sup>n</sup>/b<sup>n</sup></div>
+<div class="formula">⑤ a<sup>0</sup> = 1（a ≠ 0）　　　a<sup>−n</sup> = 1 / a<sup>n</sup></div>
+<h3>三、例題示範</h3>
+<div class="example"><b>例 1：</b>2³ × 2⁴ = 2<sup>3+4</sup> = 2⁷ = <b>128</b></div>
+<div class="example"><b>例 2：</b>3⁵ ÷ 3² = 3<sup>5−2</sup> = 3³ = <b>27</b></div>
+<div class="example"><b>例 3：</b>(x²)³ = x<sup>2×3</sup> = <b>x⁶</b></div>
+<div class="example"><b>例 4：</b>5<sup>−2</sup> = 1 / 5² = <b>1/25 = 0.04</b></div>
+<div class="example"><b>例 5（混合）：</b>化簡 (2x³)² × x⁻¹<br>= 4x⁶ × x⁻¹ = 4x<sup>6−1</sup> = <b>4x⁵</b></div>
+<h3>四、科學記數法</h3>
+<div class="formula">a × 10ⁿ，1 ≤ a &lt; 10</div>
+<div class="example"><b>例：</b>(3 × 10⁴) × (2 × 10⁻²) = 6 × 10² = <b>600</b></div>
+<div class="warn">⚠️ <b>常見錯誤</b>：把 a<sup>m</sup> + a<sup>n</sup> 誤算成 a<sup>m+n</sup>。<b>指數律只適用於乘除</b>；a<sup>m</sup> + a<sup>n</sup> 不能合併。又如 (2x)² = 4x²，不是 2x²。</div>
+<div class="tip">🇲🇴 <b>應用</b>：計算細菌繁殖、複利、電腦記憶體容量（KB → MB → GB 都是 10³ 進位）時都會用到指數。</div>`,
+en:`<h3>1. Meaning of indices</h3>
+<p>aⁿ = a × a × … × a (n factors). a is the base, n is the index.</p>
+<div class="example">2⁵ = <b>32</b></div>
+<h3>2. Five index laws</h3>
+<div class="formula">① a<sup>m</sup> × a<sup>n</sup> = a<sup>m+n</sup></div>
+<div class="formula">② a<sup>m</sup> ÷ a<sup>n</sup> = a<sup>m−n</sup></div>
+<div class="formula">③ (a<sup>m</sup>)<sup>n</sup> = a<sup>mn</sup></div>
+<div class="formula">④ (ab)<sup>n</sup> = a<sup>n</sup>b<sup>n</sup></div>
+<div class="formula">⑤ a<sup>0</sup> = 1; a<sup>−n</sup> = 1/a<sup>n</sup></div>
+<h3>3. Worked examples</h3>
+<div class="example">2³ × 2⁴ = 2⁷ = <b>128</b></div>
+<div class="example">3⁵ ÷ 3² = 3³ = <b>27</b></div>
+<div class="example">(x²)³ = <b>x⁶</b></div>
+<div class="example">5<sup>−2</sup> = <b>1/25</b></div>
+<div class="example">(2x³)² × x⁻¹ = 4x⁶ × x⁻¹ = <b>4x⁵</b></div>
+<h3>4. Scientific notation</h3>
+<div class="example">(3 × 10⁴)(2 × 10⁻²) = 6 × 10² = <b>600</b></div>
+<div class="warn">⚠️ Index laws do <b>not</b> apply to addition. Also (2x)² = 4x².</div>`},
+
+'f2-2':{
+zh:`<h3>一、多項式的定義</h3>
+<p>由數與字母經加、減、乘（乘方）組成的式子，叫多項式。例如 3x² − 2x + 5。</p>
+<ul>
+<li><b>項</b>：以加減號分隔的部分</li>
+<li><b>次數</b>：最高次項的指數</li>
+<li><b>常數項</b>：不含字母的項</li>
+</ul>
+<h3>二、展開多項式</h3>
+<p>用<b>分配律</b>逐項相乘，再合併同類項。</p>
+<div class="example"><b>例 1：</b>(x + 3)(x − 2)<br>= x² − 2x + 3x − 6<br>= <b>x² + x − 6</b></div>
+<div class="example"><b>例 2：</b>(2x − 1)(3x + 4)<br>= 6x² + 8x − 3x − 4<br>= <b>6x² + 5x − 4</b></div>
+<h3>三、三個重要恒等式</h3>
+<div class="formula">(a + b)² = a² + 2ab + b²</div>
+<div class="formula">(a − b)² = a² − 2ab + b²</div>
+<div class="formula">(a + b)(a − b) = a² − b²</div>
+<div class="example"><b>例：</b>(x + 4)² = x² + 8x + 16<br>(2x − 3)² = 4x² − 12x + 9<br>(x + 7)(x − 7) = x² − 49</div>
+<h3>四、恒等式的意義與應用</h3>
+<p><b>恒等式</b>是對<b>所有</b>數值都成立的等式。常用方法：<b>比較係數</b>。</p>
+<div class="example"><b>例：</b>若 x² + ax + 12 ≡ (x + 3)(x + b)，求 a、b。<br>右邊展開 = x² + (b + 3)x + 3b<br>比較常數項：3b = 12 → b = 4<br>比較 x 項：a = b + 3 = <b>7</b></div>
+<h3>五、多項式的除法（長除法）</h3>
+<p>把被除式按降冪排列，用長除法可求商式與餘式。</p>
+<div class="example"><b>例：</b>(x² + 5x + 6) ÷ (x + 2) = <b>x + 3</b></div>
+<div class="warn">⚠️ <b>常見錯誤</b>：(a + b)² ≠ a² + b²，必須加上中間項 2ab。展開 (x − 3)² 得 x² − 6x + 9，不是 x² − 9。</div>
+<div class="tip">🇲🇴 <b>驗算技巧</b>：恒等式可代入簡單數值（如 x = 1）快速檢查左右是否相等。</div>`,
+en:`<h3>1. Polynomials</h3>
+<p>Expressions built from numbers and letters using +, −, ×. e.g. 3x² − 2x + 5: terms, degree, constant term.</p>
+<h3>2. Expansion</h3>
+<div class="example">(x + 3)(x − 2) = x² + x − 6</div>
+<div class="example">(2x − 1)(3x + 4) = 6x² + 5x − 4</div>
+<h3>3. Three key identities</h3>
+<div class="formula">(a + b)² = a² + 2ab + b²</div>
+<div class="formula">(a − b)² = a² − 2ab + b²</div>
+<div class="formula">(a + b)(a − b) = a² − b²</div>
+<div class="example">(x + 4)² = x² + 8x + 16; (x + 7)(x − 7) = x² − 49</div>
+<h3>4. Identities & comparing coefficients</h3>
+<div class="example">If x² + ax + 12 ≡ (x + 3)(x + b), expanding gives 3b = 12 → b = 4, a = 7.</div>
+<div class="warn">⚠️ (a + b)² ≠ a² + b² — never forget the 2ab term.</div>
+<div class="tip">🇲🇴 Substitute a simple value such as x = 1 to check an identity quickly.</div>`},
+
+'f2-3':{
+zh:`<h3>一、因式分解是甚麼？</h3>
+<p>把一個多項式寫成<b>幾個整式的乘積</b>，叫因式分解。它是展開的逆運算。</p>
+<h3>二、方法一：提取公因式</h3>
+<p>找出各項的<b>最大公因式</b>（係數取最大公因數、字母取最低次冪）。</p>
+<div class="example"><b>例 1：</b>6x² + 9x = <b>3x(2x + 3)</b></div>
+<div class="example"><b>例 2：</b>12a²b − 8ab² = <b>4ab(3a − 2b)</b></div>
+<h3>三、方法二：十字相乘法</h3>
+<p>用於 x² + bx + c 形式：找兩個數，<b>乘積 = c、和 = b</b>。</p>
+<div class="example"><b>例 1：</b>x² + 5x + 6<br>找兩數：2 × 3 = 6，2 + 3 = 5<br>→ <b>(x + 2)(x + 3)</b></div>
+<div class="example"><b>例 2：</b>x² − 7x + 10<br>找兩數：−2 × −5 = 10，−2 + (−5) = −7<br>→ <b>(x − 2)(x − 5)</b></div>
+<div class="example"><b>例 3（首項係數不為 1）：</b>2x² + 7x + 3<br>拆成 (2x + 1)(x + 3)，驗算：2x² + 6x + x + 3 = 2x² + 7x + 3 ✅</div>
+<h3>四、方法三：平方差</h3>
+<div class="formula">a² − b² = (a + b)(a − b)</div>
+<div class="example"><b>例：</b>x² − 16 = (x + 4)(x − 4)<br>4x² − 25 = (2x + 5)(2x − 5)</div>
+<h3>五、方法四：完全平方</h3>
+<div class="formula">a² + 2ab + b² = (a + b)²　　　a² − 2ab + b² = (a − b)²</div>
+<div class="example"><b>例：</b>x² + 10x + 25 = <b>(x + 5)²</b></div>
+<h3>六、解題策略</h3>
+<ol>
+<li>先看有沒有<b>公因式</b>（永遠先做）</li>
+<li>再看是不是<b>平方差</b>或<b>完全平方</b></li>
+<li>否則用<b>十字相乘</b></li>
+</ol>
+<div class="example"><b>例（綜合）：</b>分解 2x² − 8<br>= 2(x² − 4)（提公因式）<br>= <b>2(x + 2)(x − 2)</b>（平方差）</div>
+<div class="warn">⚠️ <b>常見錯誤</b>：分解後沒有「分解到底」；忘記先提公因式；符號寫錯（(x − 2)(x + 3) 與 (x + 2)(x − 3) 不同）。</div>
+<div class="tip">🎲 <b>檢查法</b>：把答案展開，看是否還原為原式。</div>`,
+en:`<h3>1. What is factorisation?</h3>
+<p>Writing a polynomial as a product of factors — the reverse of expansion.</p>
+<h3>2. Common factor</h3>
+<div class="example">6x² + 9x = <b>3x(2x + 3)</b></div>
+<div class="example">12a²b − 8ab² = <b>4ab(3a − 2b)</b></div>
+<h3>3. Cross method</h3>
+<p>For x² + bx + c: find two numbers whose product is c and sum is b.</p>
+<div class="example">x² + 5x + 6 = <b>(x + 2)(x + 3)</b></div>
+<div class="example">x² − 7x + 10 = <b>(x − 2)(x − 5)</b></div>
+<div class="example">2x² + 7x + 3 = <b>(2x + 1)(x + 3)</b></div>
+<h3>4. Difference of squares</h3>
+<div class="formula">a² − b² = (a + b)(a − b)</div>
+<div class="example">x² − 16 = <b>(x + 4)(x − 4)</b>; 4x² − 25 = <b>(2x + 5)(2x − 5)</b></div>
+<h3>5. Perfect squares</h3>
+<div class="formula">a² ± 2ab + b² = (a ± b)²</div>
+<div class="example">x² + 10x + 25 = <b>(x + 5)²</b></div>
+<h3>6. Strategy</h3>
+<ol><li>Take out the common factor first</li><li>Check for a difference of squares / perfect square</li><li>Otherwise use the cross method</li></ol>
+<div class="example">2x² − 8 = 2(x² − 4) = <b>2(x + 2)(x − 2)</b></div>
+<div class="warn">⚠️ Always factorise completely.</div>`},
+
+'f2-4':{
+zh:`<h3>一、不等式的符號</h3>
+<ul>
+<li><b>&lt;</b> 小於　<b>&gt;</b> 大於</li>
+<li><b>≤</b> 小於或等於　<b>≥</b> 大於或等於</li>
+</ul>
+<h3>二、解一元一次不等式</h3>
+<p>步驟與解方程相似：去括號 → 移項 → 化係數為 1。但有<b>一條關鍵規則</b>：</p>
+<div class="warn">⚠️ <b>兩邊同乘以或同除以一個負數時，不等號的方向要改變！</b></div>
+<div class="example"><b>例 1：</b>解 3x − 5 &lt; 10<br>3x &lt; 15<br>x &lt; <b>5</b></div>
+<div class="example"><b>例 2（除以負數）：</b>解 −2x ≥ 8<br>兩邊同除以 −2，不等號反向<br>x ≤ <b>−4</b></div>
+<div class="example"><b>例 3（含括號）：</b>解 4(x − 2) ≤ 2x + 6<br>4x − 8 ≤ 2x + 6<br>2x ≤ 14<br>x ≤ <b>7</b></div>
+<h3>三、在數線上表示解集</h3>
+<ul>
+<li>x &gt; 3：在 3 畫空心圈，向右畫箭頭</li>
+<li>x ≥ 3：在 3 畫實心點，向右畫箭頭</li>
+<li>x &lt; 3：空心圈，向左</li>
+</ul>
+<h3>四、求整數解</h3>
+<p>先求出不等式的解集，再從中挑出整數。</p>
+<div class="example"><b>例：</b>x &lt; 5 的最大整數解是 <b>4</b>；x ≥ −2 的最小整數解是 <b>−2</b>。</div>
+<div class="example"><b>例：</b>求 2x + 1 ≤ 11 的所有正整數解。<br>2x ≤ 10 → x ≤ 5 → 正整數解為 <b>1, 2, 3, 4, 5</b></div>
+<h3>五、應用題</h3>
+<div class="example"><b>例：</b>小明有 100 元，想買每本 18 元的筆記本，最多可買多少本？<br>設買 n 本：18n ≤ 100 → n ≤ 5.55…<br>n 為整數，故最多 <b>5 本</b>。</div>
+<div class="warn">⚠️ <b>常見錯誤</b>：兩邊乘除負數時忘記變號；把 x &lt; 5 的最大整數解答成 5（5 本身不在解集內）。</div>
+<div class="tip">🇲🇴 <b>澳門情境</b>：班會經費 500 元，每人餐費 45 元，最多可招待 500 ÷ 45 ≈ 11.1，即 <b>11 人</b>。</div>`,
+en:`<h3>1. Symbols</h3>
+<p>&lt; less than, &gt; greater than, ≤ at most, ≥ at least.</p>
+<h3>2. Solving linear inequalities</h3>
+<p>Same steps as equations, but:</p>
+<div class="warn">⚠️ <b>Reverse the inequality sign when multiplying or dividing by a negative number.</b></div>
+<div class="example">3x − 5 &lt; 10 → x &lt; <b>5</b></div>
+<div class="example">−2x ≥ 8 → x ≤ <b>−4</b> (sign reversed)</div>
+<div class="example">4(x − 2) ≤ 2x + 6 → 2x ≤ 14 → x ≤ <b>7</b></div>
+<h3>3. Number line</h3>
+<p>Open circle for &lt; or &gt;, filled dot for ≤ or ≥.</p>
+<h3>4. Integer solutions</h3>
+<div class="example">Greatest integer with x &lt; 5 is <b>4</b>.</div>
+<div class="example">2x + 1 ≤ 11 → x ≤ 5 → positive integers: <b>1, 2, 3, 4, 5</b></div>
+<h3>5. Applications</h3>
+<div class="example">$100 with notebooks at $18: 18n ≤ 100 → n ≤ 5.55 → at most <b>5</b>.</div>
+<div class="warn">⚠️ Do not forget to flip the sign.</div>`},
+
+'f2-5':{
+zh:`<h3>一、畢氏定理</h3>
+<p>在<b>直角三角形</b>中，兩條直角邊的平方和等於斜邊的平方。</p>
+<div class="formula">a² + b² = c²　（c 為斜邊，即直角所對的邊，也是最長邊）</div>
+<h3>二、求斜邊</h3>
+<div class="example"><b>例：</b>兩直角邊為 6 cm 和 8 cm，求斜邊。<br>c² = 6² + 8² = 36 + 64 = 100<br>c = <b>10 cm</b></div>
+<h3>三、求直角邊</h3>
+<div class="example"><b>例：</b>斜邊 13 cm，一條直角邊 5 cm，求另一條。<br>b² = 13² − 5² = 169 − 25 = 144<br>b = <b>12 cm</b></div>
+<h3>四、畢氏定理的逆定理</h3>
+<p>若三角形三邊 a、b、c（c 最長）滿足 a² + b² = c²，則該三角形是<b>直角三角形</b>，且 c 所對的角是直角。</p>
+<div class="example"><b>例：</b>三邊 7、24、25。<br>7² + 24² = 49 + 576 = 625 = 25²<br>所以是<b>直角三角形</b>。</div>
+<div class="example"><b>例：</b>三邊 4、5、6。<br>4² + 5² = 41，6² = 36，41 ≠ 36 → <b>不是</b>直角三角形。</div>
+<h3>五、常見勾股數</h3>
+<p>(3, 4, 5)、(5, 12, 13)、(8, 15, 17)、(7, 24, 25)，以及它們的整數倍（如 6, 8, 10）。</p>
+<h3>六、應用題</h3>
+<div class="example"><b>例：</b>一把 5 m 長的梯子靠在牆上，梯腳離牆 3 m，梯頂離地多高？<br>h² = 5² − 3² = 25 − 9 = 16 → h = <b>4 m</b></div>
+<div class="warn">⚠️ <b>常見錯誤</b>：沒有確認哪條是斜邊就把三邊亂套公式；忘記在最後開平方根。</div>
+<div class="tip">🇲🇴 <b>澳門情境</b>：要測量澳門旅遊塔與地面某一點的直線距離，可用畢氏定理計算水平距離與垂直高度的斜邊。</div>`,
+en:`<h3>1. Pythagoras' Theorem</h3>
+<p>In a right-angled triangle, the square of the hypotenuse equals the sum of the squares of the other two sides.</p>
+<div class="formula">a² + b² = c² (c = hypotenuse)</div>
+<h3>2. Finding the hypotenuse</h3>
+<div class="example">Legs 6 and 8 → c² = 36 + 64 = 100 → c = <b>10</b></div>
+<h3>3. Finding a leg</h3>
+<div class="example">Hypotenuse 13, one leg 5 → b² = 169 − 25 = 144 → b = <b>12</b></div>
+<h3>4. Converse</h3>
+<p>If a² + b² = c² (c the longest side), the triangle is right-angled.</p>
+<div class="example">7, 24, 25 → 49 + 576 = 625 = 25² → <b>right-angled</b></div>
+<div class="example">4, 5, 6 → 41 ≠ 36 → <b>not</b> right-angled</div>
+<h3>5. Common triples</h3>
+<p>(3,4,5), (5,12,13), (8,15,17), (7,24,25) and their multiples.</p>
+<h3>6. Applications</h3>
+<div class="example">Ladder 5 m, foot 3 m from the wall → h² = 25 − 9 = 16 → h = <b>4 m</b></div>
+<div class="warn">⚠️ Always identify the hypotenuse first.</div>`},
+
+'f2-6':{
+zh:`<h3>一、平行四邊形</h3>
+<p><b>定義</b>：兩組對邊分別平行的四邊形。</p>
+<p><b>性質</b>：</p>
+<ul>
+<li>對邊相等</li>
+<li>對角相等</li>
+<li>鄰角互補（相加 180°）</li>
+<li>對角線互相平分</li>
+</ul>
+<div class="example"><b>例：</b>平行四邊形 ABCD 中 ∠A = 70°，則 ∠B = 180 − 70 = <b>110°</b>，∠C = 70°，∠D = 110°。</div>
+<h3>二、特殊四邊形</h3>
+<h4>菱形</h4>
+<ul><li>四邊相等</li><li>對角線互相垂直且平分對角</li><li>面積 = 對角線乘積 ÷ 2</li></ul>
+<h4>矩形</h4>
+<ul><li>四個角都是直角</li><li>對角線相等且互相平分</li></ul>
+<h4>正方形</h4>
+<ul><li>同時具備菱形與矩形的所有性質</li><li>四邊相等、四角為直角、對角線相等且垂直</li></ul>
+<h3>三、梯形</h3>
+<p>只有一組對邊平行的四邊形。<b>等腰梯形</b>：兩腰相等，底角相等，對角線相等。</p>
+<h3>四、多邊形內角和與外角和</h3>
+<div class="formula">n 邊形內角和 = (n − 2) × 180°</div>
+<div class="formula">任何凸多邊形外角和 = 360°</div>
+<div class="formula">正 n 邊形每個外角 = 360° ÷ n，每個內角 = 180° − 360°/n</div>
+<div class="example"><b>例：</b>正十邊形每個外角 = 360 ÷ 10 = <b>36°</b>，每個內角 = 180 − 36 = <b>144°</b></div>
+<div class="warn">⚠️ <b>常見錯誤</b>：把菱形和正方形的性質混淆（菱形對角線不一定相等）；求正多邊形內角時誤用 360°/n。</div>
+<div class="tip">🇲🇴 <b>應用</b>：地磚鋪設常利用正方形、正六邊形等正多邊形，因為它們的內角能拼成 360°。</div>`,
+en:`<h3>1. Parallelogram</h3>
+<p>Two pairs of parallel opposite sides. Properties: opposite sides equal, opposite angles equal, adjacent angles supplementary, diagonals bisect each other.</p>
+<div class="example">If ∠A = 70°, then ∠B = <b>110°</b>.</div>
+<h3>2. Special quadrilaterals</h3>
+<h4>Rhombus</h4>
+<p>Four equal sides; diagonals perpendicular and bisect the angles; area = ½ d₁d₂.</p>
+<h4>Rectangle</h4>
+<p>Four right angles; diagonals equal and bisect each other.</p>
+<h4>Square</h4>
+<p>All rhombus and rectangle properties together.</p>
+<h3>3. Trapezium</h3>
+<p>Exactly one pair of parallel sides. Isosceles trapezium: equal legs, equal base angles, equal diagonals.</p>
+<h3>4. Polygons</h3>
+<div class="formula">Interior sum = (n − 2) × 180°; exterior sum = 360°</div>
+<div class="formula">Regular n-gon: exterior = 360°/n, interior = 180° − 360°/n</div>
+<div class="example">Regular decagon: exterior <b>36°</b>, interior <b>144°</b></div>
+<div class="warn">⚠️ A rhombus does not necessarily have equal diagonals.</div>`},
+
+'f2-7':{
+zh:`<h3>一、柱體的體積</h3>
+<p>柱體（棱柱、圓柱）的體積公式統一為：</p>
+<div class="formula">體積 = 底面積 × 高</div>
+<h3>二、長方體與正方體</h3>
+<div class="formula">長方體體積 = 長 × 闊 × 高　　表面積 = 2(lw + lh + wh)</div>
+<div class="formula">正方體體積 = 邊長³　　表面積 = 6 × 邊長²</div>
+<div class="example"><b>例：</b>長 5 cm、闊 4 cm、高 3 cm 的長方體<br>體積 = 5 × 4 × 3 = <b>60 cm³</b><br>表面積 = 2(20 + 15 + 12) = <b>94 cm²</b></div>
+<h3>三、三角柱</h3>
+<div class="example"><b>例：</b>底面是底 6 cm、高 4 cm 的三角形，柱高 10 cm。<br>底面積 = 6 × 4 ÷ 2 = 12 cm²<br>體積 = 12 × 10 = <b>120 cm³</b></div>
+<h3>四、圓柱</h3>
+<div class="formula">體積 = πr²h</div>
+<div class="formula">總表面積 = 2πr² + 2πrh</div>
+<div class="example"><b>例：</b>r = 3 cm、h = 10 cm<br>V = π × 9 × 10 = 90π ≈ <b>282.7 cm³</b></div>
+<h3>五、容量與單位換算</h3>
+<div class="formula">1 cm³ = 1 mL　　1 000 cm³ = 1 L　　1 m³ = 1 000 L</div>
+<div class="example"><b>例：</b>一個長方體水箱 50 cm × 40 cm × 30 cm，容積 = 60 000 cm³ = <b>60 L</b></div>
+<h3>六、棱錐與圓錐（延伸）</h3>
+<div class="formula">錐體體積 = 底面積 × 高 ÷ 3</div>
+<div class="warn">⚠️ <b>常見錯誤</b>：把「高」與「斜高」混淆；計算圓柱表面積時漏算上下兩個底面，或把 2πr² 誤寫成 πr²。</div>
+<div class="tip">🇲🇴 <b>澳門情境</b>：澳門旅遊塔塔身可近似看作一個圓柱段，用 πr²h 估算其體積。</div>`,
+en:`<h3>1. Prisms and cylinders</h3>
+<div class="formula">Volume = base area × height</div>
+<h3>2. Cuboid & cube</h3>
+<div class="formula">Cuboid: V = lwh, S = 2(lw + lh + wh)</div>
+<div class="formula">Cube: V = s³, S = 6s²</div>
+<div class="example">5 × 4 × 3: V = <b>60 cm³</b>, S = <b>94 cm²</b></div>
+<h3>3. Triangular prism</h3>
+<div class="example">Base triangle 6 × 4 ÷ 2 = 12 cm², height 10 → V = <b>120 cm³</b></div>
+<h3>4. Cylinder</h3>
+<div class="formula">V = πr²h; total surface area = 2πr² + 2πrh</div>
+<div class="example">r = 3, h = 10 → V = 90π ≈ <b>282.7 cm³</b></div>
+<h3>5. Units</h3>
+<div class="formula">1 cm³ = 1 mL; 1000 cm³ = 1 L; 1 m³ = 1000 L</div>
+<div class="example">50 × 40 × 30 cm = 60 000 cm³ = <b>60 L</b></div>
+<h3>6. Pyramids & cones</h3>
+<div class="formula">Volume = base area × height ÷ 3</div>
+<div class="warn">⚠️ Do not confuse height with slant height. A cylinder has <b>two</b> circular ends.</div>`},
+
+'f2-8':{
+zh:`<h3>一、概率的意義</h3>
+<div class="formula">P(事件) = 有利結果數 ÷ 所有可能的結果數</div>
+<p>概率的值介於 0 與 1 之間。</p>
+<ul>
+<li>P(必然事件) = 1</li>
+<li>P(不可能事件) = 0</li>
+<li>0 &lt; P(隨機事件) &lt; 1</li>
+</ul>
+<h3>二、基本例題</h3>
+<div class="example"><b>例 1：</b>擲一粒勻稱骰子，求 P(奇數)。<br>奇數有 1、3、5 共 3 個，共 6 個可能結果<br>P = 3/6 = <b>1/2 = 0.5</b></div>
+<div class="example"><b>例 2：</b>袋中有 3 個紅球、5 個藍球、2 個綠球。<br>P(紅) = 3/10 = <b>0.3</b>；P(不是紅) = 1 − 0.3 = <b>0.7</b></div>
+<h3>三、補事件</h3>
+<div class="formula">P(事件不發生) = 1 − P(事件發生)</div>
+<div class="example"><b>例：</b>某天降雨概率是 0.35，則不降雨的概率 = 1 − 0.35 = <b>0.65</b></div>
+<h3>四、兩次抽取</h3>
+<p>逐次抽取時可用<b>樹狀圖</b>或乘法原理。</p>
+<div class="example"><b>例（有放回）：</b>袋中有 2 紅 3 藍，抽兩次（每次放回），兩次都是紅的概率。<br>P = (2/5) × (2/5) = <b>4/25 = 0.16</b></div>
+<div class="example"><b>例（不放回）：</b>同上但不放回。<br>P = (2/5) × (1/4) = <b>2/20 = 0.1</b></div>
+<h3>五、樹狀圖</h3>
+<p>把每次的可能結果畫成樹枝，末端相乘、分支相加，可清楚計算複合事件的概率。</p>
+<div class="warn">⚠️ <b>常見錯誤</b>：不放回抽取時忘記分母要減 1；把「至少一次」直接相加兩次概率（應先算補事件「一次都沒有」）。</div>
+<div class="tip">🇲🇴 <b>澳門情境</b>：抽獎箱中有 3 張一等獎券、17 張安慰獎券，抽中一等獎的概率 = 3/20 = <b>0.15</b>。</div>`,
+en:`<h3>1. Meaning</h3>
+<div class="formula">P(event) = favourable outcomes ÷ total outcomes</div>
+<p>0 ≤ P ≤ 1. P(certain) = 1, P(impossible) = 0.</p>
+<h3>2. Basic examples</h3>
+<div class="example">Fair die, P(odd) = 3/6 = <b>0.5</b></div>
+<div class="example">3 red, 5 blue, 2 green: P(red) = <b>0.3</b>, P(not red) = <b>0.7</b></div>
+<h3>3. Complementary events</h3>
+<div class="formula">P(not A) = 1 − P(A)</div>
+<div class="example">Rain probability 0.35 → no rain = <b>0.65</b></div>
+<h3>4. Two draws</h3>
+<div class="example"><b>With replacement</b> (2 red, 3 blue): (2/5)² = <b>0.16</b></div>
+<div class="example"><b>Without replacement</b>: (2/5)(1/4) = <b>0.1</b></div>
+<h3>5. Tree diagrams</h3>
+<p>Multiply along branches, add across branches.</p>
+<div class="warn">⚠️ Without replacement, the denominator decreases. For "at least one", use the complement.</div>`},
+
+/* ================= F3 ================= */
+'f3-1':{
+zh:`<h3>一、一元二次方程的形式</h3>
+<div class="formula">ax² + bx + c = 0　（a ≠ 0）</div>
+<h3>二、解法一：因式分解法</h3>
+<p>若能分解成 (x − p)(x − q) = 0，則 <b>x = p 或 x = q</b>（零乘積性質）。</p>
+<div class="example"><b>例：</b>x² − 5x + 6 = 0<br>(x − 2)(x − 3) = 0<br><b>x = 2 或 x = 3</b></div>
+<div class="example"><b>例：</b>2x² + 5x − 3 = 0<br>(2x − 1)(x + 3) = 0<br><b>x = 1/2 或 x = −3</b></div>
+<h3>三、解法二：配方法</h3>
+<p>把方程化成 (x + p)² = q 的形式，再開平方。</p>
+<div class="example"><b>例：</b>x² + 6x − 7 = 0<br>x² + 6x = 7<br>x² + 6x + 9 = 16<br>(x + 3)² = 16<br>x + 3 = ±4 → <b>x = 1 或 x = −7</b></div>
+<h3>四、解法三：公式法</h3>
+<div class="formula">x = [−b ± √(b² − 4ac)] ÷ 2a</div>
+<div class="example"><b>例：</b>解 2x² − 4x − 3 = 0<br>a = 2, b = −4, c = −3<br>b² − 4ac = 16 + 24 = 40<br>x = (4 ± √40) ÷ 4 = (4 ± 2√10) ÷ 4<br><b>x = (2 ± √10)/2</b></div>
+<h3>五、判別式 Δ = b² − 4ac</h3>
+<ul>
+<li><b>Δ &gt; 0</b>：兩個相異實根</li>
+<li><b>Δ = 0</b>：一個重根（兩根相等）</li>
+<li><b>Δ &lt; 0</b>：沒有實根</li>
+</ul>
+<div class="example"><b>例：</b>判斷 x² + 2x + 5 = 0 的根的情況。<br>Δ = 4 − 20 = −16 &lt; 0 → <b>沒有實根</b></div>
+<h3>六、根與係數的關係（韋達定理）</h3>
+<div class="formula">兩根之和 α + β = −b/a　　兩根之積 αβ = c/a</div>
+<div class="example"><b>例：</b>x² − 5x + 6 = 0 的兩根為 2 和 3。<br>和 = 5 = −(−5)/1 ✅　積 = 6 = 6/1 ✅</div>
+<div class="warn">⚠️ <b>常見錯誤</b>：代入公式時忘記 b 的負號；判別式算出負數仍寫「有實根」；因式分解後寫成 x = 2 和 x = 3（應為「或」）。</div>
+<div class="tip">🇲🇴 <b>澳門情境</b>：在大三巴前地拋出的球，其高度 h = −5t² + 20t + 1.5，令 h = 0 解二次方程可求落地時間。</div>`,
+en:`<h3>1. Standard form</h3>
+<div class="formula">ax² + bx + c = 0 (a ≠ 0)</div>
+<h3>2. Factorisation</h3>
+<div class="example">x² − 5x + 6 = 0 → (x − 2)(x − 3) = 0 → <b>x = 2 or 3</b></div>
+<h3>3. Completing the square</h3>
+<div class="example">x² + 6x − 7 = 0 → (x + 3)² = 16 → <b>x = 1 or −7</b></div>
+<h3>4. Quadratic formula</h3>
+<div class="formula">x = [−b ± √(b² − 4ac)] ÷ 2a</div>
+<div class="example">2x² − 4x − 3 = 0 → Δ = 40 → x = (2 ± √10)/2</div>
+<h3>5. Discriminant Δ = b² − 4ac</h3>
+<ul><li>Δ &gt; 0: two distinct real roots</li><li>Δ = 0: one repeated root</li><li>Δ &lt; 0: no real roots</li></ul>
+<div class="example">x² + 2x + 5 = 0 → Δ = −16 &lt; 0 → <b>no real roots</b></div>
+<h3>6. Sum and product of roots</h3>
+<div class="formula">α + β = −b/a, αβ = c/a</div>
+<div class="warn">⚠️ Watch the sign of b in the formula.</div>`},
+
+'f3-2':{
+zh:`<h3>一、二次函數的圖像</h3>
+<p>y = ax² + bx + c（a ≠ 0）的圖像是一條<b>拋物線</b>。</p>
+<ul>
+<li>a &gt; 0：開口<b>向上</b>，有<b>極小值</b></li>
+<li>a &lt; 0：開口<b>向下</b>，有<b>極大值</b></li>
+<li>|a| 越大，開口越窄</li>
+</ul>
+<h3>二、頂點式</h3>
+<div class="formula">y = a(x − h)² + k</div>
+<p>頂點為 <b>(h, k)</b>，對稱軸為直線 <b>x = h</b>。</p>
+<div class="example"><b>例：</b>y = 2(x − 3)² + 5<br>頂點 (3, 5)，對稱軸 x = 3，因為 a = 2 &gt; 0，故極小值 = <b>5</b></div>
+<div class="example"><b>例：</b>y = −(x + 2)² + 9<br>頂點 (−2, 9)，對稱軸 x = −2，極大值 = <b>9</b></div>
+<h3>三、一般式求頂點</h3>
+<div class="formula">對稱軸 x = −b / (2a)　　頂點 y 坐標 = 4ac − b² / (4a)</div>
+<div class="example"><b>例：</b>y = x² − 6x + 5<br>對稱軸 x = 6/2 = 3<br>頂點 y = 3² − 6(3) + 5 = <b>−4</b><br>頂點 (3, −4)，極小值 −4</div>
+<h3>四、與坐標軸的交點</h3>
+<ul>
+<li><b>y 軸截距</b>：令 x = 0，得 y = c，交點 (0, c)</li>
+<li><b>x 軸截距</b>：令 y = 0，解二次方程 ax² + bx + c = 0</li>
+</ul>
+<div class="example"><b>例：</b>y = x² − 6x + 5<br>y 截距 (0, 5)<br>解 x² − 6x + 5 = 0 → (x − 1)(x − 5) = 0 → x 截距 (1, 0) 和 (5, 0)</div>
+<h3>五、判別式與圖像</h3>
+<ul>
+<li>Δ &gt; 0：拋物線與 x 軸交於兩點</li>
+<li>Δ = 0：與 x 軸相切於一點（頂點在 x 軸上）</li>
+<li>Δ &lt; 0：與 x 軸沒有交點</li>
+</ul>
+<div class="warn">⚠️ <b>常見錯誤</b>：把頂點的橫坐標誤寫成 b/(2a)（應為 −b/(2a)）；把 a &gt; 0 的圖像說成「有極大值」。</div>
+<div class="tip">🇲🇴 <b>澳門情境</b>：在大三巴前地拋出的球，其高度隨時間變化的軌跡是一條<b>開口向下</b>的拋物線，頂點代表球到達的最高點。</div>`,
+en:`<h3>1. The graph</h3>
+<p>y = ax² + bx + c is a <b>parabola</b>. a &gt; 0 opens upward (minimum); a &lt; 0 opens downward (maximum).</p>
+<h3>2. Vertex form</h3>
+<div class="formula">y = a(x − h)² + k → vertex (h, k), axis x = h</div>
+<div class="example">y = 2(x − 3)² + 5 → vertex (3, 5), minimum <b>5</b></div>
+<div class="example">y = −(x + 2)² + 9 → vertex (−2, 9), maximum <b>9</b></div>
+<h3>3. Vertex from general form</h3>
+<div class="formula">axis x = −b/(2a)</div>
+<div class="example">y = x² − 6x + 5 → axis x = 3, vertex (3, −4)</div>
+<h3>4. Intercepts</h3>
+<p>y-intercept: set x = 0 → (0, c). x-intercepts: set y = 0 and solve.</p>
+<div class="example">y = x² − 6x + 5 → (0,5), (1,0), (5,0)</div>
+<h3>5. Discriminant and the graph</h3>
+<p>Δ &gt; 0: two intersections; Δ = 0: tangent to the x-axis; Δ &lt; 0: no intersection.</p>
+<div class="warn">⚠️ The axis is x = −b/(2a), not b/(2a).</div>
+<div class="tip">🇲🇴 Macau: a ball thrown near the Ruins of St. Paul's follows a downward parabola.</div>`},
+
+'f3-3':{
+zh:`<h3>一、反比例關係</h3>
+<p>當 x 增大時 y 相應減小，且乘積保持不變，稱 y 與 x 成<b>反比</b>。</p>
+<div class="formula">y = k / x　或　xy = k　（k ≠ 0，稱為比例常數）</div>
+<h3>二、求比例常數</h3>
+<div class="example"><b>例：</b>已知 y 與 x 成反比，且 x = 2 時 y = 6。<br>k = xy = 2 × 6 = <b>12</b><br>所以 y = 12/x。當 x = 3 時，y = 12/3 = <b>4</b>。</div>
+<h3>三、圖像</h3>
+<p>y = k/x 的圖像是<b>雙曲線</b>，由兩支曲線組成：</p>
+<ul>
+<li>k &gt; 0：兩支分別在<b>第一、第三</b>象限</li>
+<li>k &lt; 0：兩支分別在<b>第二、第四</b>象限</li>
+<li>圖像<b>永遠不與坐標軸相交</b>（x ≠ 0、y ≠ 0）</li>
+</ul>
+<h3>四、與正比例的比較</h3>
+<div class="formula">正比例：y = kx（圖像為過原點的直線）</div>
+<div class="formula">反比例：y = k/x（圖像為雙曲線）</div>
+<h3>五、應用題</h3>
+<div class="example"><b>例 1：</b>路程固定為 120 km，速度 v 與時間 t 成反比。<br>v × t = 120。當 v = 60 km/h 時，t = <b>2 小時</b>；當 v = 40 km/h 時，t = <b>3 小時</b>。</div>
+<div class="example"><b>例 2：</b>6 個人完成一項工程需 8 天，若 4 個人做，需多少天？<br>人數 × 天數 = 常數 = 6 × 8 = 48<br>4 × t = 48 → t = <b>12 天</b></div>
+<div class="warn">⚠️ <b>常見錯誤</b>：把反比例當成正比例（用 y = kx）；忘記 k ≠ 0；誤以為圖像與坐標軸有交點。</div>
+<div class="tip">🇲🇴 <b>澳門情境</b>：從關閘到氹仔路程固定，行車速度與所需時間成反比——開快一倍，時間減半。</div>`,
+en:`<h3>1. Inverse proportion</h3>
+<div class="formula">y = k/x, i.e. xy = k (k ≠ 0)</div>
+<h3>2. Finding k</h3>
+<div class="example">y ∝ 1/x and y = 6 when x = 2 → k = 12; when x = 3, y = <b>4</b>.</div>
+<h3>3. Graph</h3>
+<p>The graph is a <b>hyperbola</b> with two branches. For k &gt; 0 they lie in quadrants I and III; for k &lt; 0 in II and IV. It never meets the axes.</p>
+<h3>4. Compare with direct proportion</h3>
+<div class="formula">Direct: y = kx (straight line through the origin)</div>
+<div class="formula">Inverse: y = k/x (hyperbola)</div>
+<h3>5. Applications</h3>
+<div class="example">Fixed 120 km journey: v × t = 120. At 60 km/h, t = <b>2 h</b>.</div>
+<div class="example">6 workers take 8 days → 4 workers take <b>12 days</b>.</div>
+<div class="warn">⚠️ Do not use y = kx for inverse proportion.</div>`},
+
+'f3-4':{
+zh:`<h3>一、坐標平面回顧</h3>
+<p>平面上任一點 P 可用有序數對 (x, y) 表示，x 為橫坐標，y 為縱坐標。</p>
+<h3>二、兩點間的距離</h3>
+<div class="formula">d = √[(x₂ − x₁)² + (y₂ − y₁)²]</div>
+<div class="example"><b>例：</b>求 (1, 2) 與 (4, 6) 的距離。<br>d = √[(4−1)² + (6−2)²] = √(9 + 16) = √25 = <b>5</b></div>
+<h3>三、中點公式</h3>
+<div class="formula">中點 = ((x₁ + x₂)/2, (y₁ + y₂)/2)</div>
+<div class="example"><b>例：</b>(1, 2) 與 (5, 8) 的中點 = ((1+5)/2, (2+8)/2) = <b>(3, 5)</b></div>
+<h3>四、斜率</h3>
+<div class="formula">m = (y₂ − y₁) ÷ (x₂ − x₁)　（x₁ ≠ x₂）</div>
+<ul>
+<li>m &gt; 0：直線向右上方傾斜</li>
+<li>m &lt; 0：直線向右下方傾斜</li>
+<li>m = 0：水平線</li>
+<li>斜率不存在：垂直線</li>
+</ul>
+<div class="example"><b>例：</b>過 (1, 2) 和 (4, 8) 的直線斜率 = (8−2)/(4−1) = 6/3 = <b>2</b></div>
+<h3>五、直線方程的兩種形式</h3>
+<h4>斜截式</h4>
+<div class="formula">y = mx + c　（m 為斜率，c 為 y 軸截距）</div>
+<div class="example"><b>例：</b>斜率 3、y 截距 −2 的直線：<b>y = 3x − 2</b></div>
+<h4>點斜式</h4>
+<div class="formula">y − y₁ = m(x − x₁)</div>
+<div class="example"><b>例：</b>過 (2, 1)、斜率 4 的直線<br>y − 1 = 4(x − 2) → y = 4x − 7</div>
+<h3>六、平行與垂直</h3>
+<div class="formula">平行：m₁ = m₂　　垂直：m₁ × m₂ = −1</div>
+<div class="example"><b>例：</b>與 y = 2x + 1 平行的直線斜率也是 <b>2</b>；垂直的直線斜率是 <b>−1/2</b>。</div>
+<div class="warn">⚠️ <b>常見錯誤</b>：斜率公式分子分母顛倒（應為 Δy/Δx）；垂直判斷誤用 m₁ = m₂。</div>
+<div class="tip">🇲🇴 <b>澳門情境</b>：用直線方程描述澳門地圖上兩地點之間的路線方向，可計算行走的坡度。</div>`,
+en:`<h3>1. Coordinates</h3>
+<p>A point P is (x, y): x is the x-coordinate, y the y-coordinate.</p>
+<h3>2. Distance</h3>
+<div class="formula">d = √[(x₂ − x₁)² + (y₂ − y₁)²]</div>
+<div class="example">(1,2) and (4,6) → √(9+16) = <b>5</b></div>
+<h3>3. Midpoint</h3>
+<div class="formula">M = ((x₁+x₂)/2, (y₁+y₂)/2)</div>
+<div class="example">(1,2) and (5,8) → <b>(3,5)</b></div>
+<h3>4. Slope</h3>
+<div class="formula">m = (y₂ − y₁)/(x₂ − x₁)</div>
+<div class="example">(1,2) and (4,8) → m = 6/3 = <b>2</b></div>
+<h3>5. Equations</h3>
+<div class="formula">Slope-intercept: y = mx + c</div>
+<div class="formula">Point-slope: y − y₁ = m(x − x₁)</div>
+<div class="example">Through (2,1), m = 4 → y = 4x − 7</div>
+<h3>6. Parallel & perpendicular</h3>
+<div class="formula">Parallel: m₁ = m₂; Perpendicular: m₁m₂ = −1</div>
+<div class="warn">⚠️ Slope is Δy/Δx, not Δx/Δy.</div>`},
+
+'f3-5':{
+zh:`<h3>一、相似的意義</h3>
+<p>兩個圖形<b>形狀相同、大小不一定相同</b>，稱為相似。相似三角形對應角相等、對應邊成比例。</p>
+<h3>二、相似三角形的三個判定條件</h3>
+<ul>
+<li><b>AAA</b>（或 AA）：三個角（或兩個角）對應相等</li>
+<li><b>SSS</b>：三邊對應成比例</li>
+<li><b>SAS</b>：兩邊對應成比例，且夾角相等</li>
+</ul>
+<h3>三、相似比與邊長</h3>
+<div class="formula">若 △ABC ~ △DEF，則 AB/DE = BC/EF = CA/FD = k（相似比）</div>
+<div class="example"><b>例：</b>△ABC ~ △DEF，AB = 6 cm，DE = 9 cm，BC = 8 cm。求 EF。<br>相似比 = 6/9 = 2/3<br>BC/EF = 2/3 → 8/EF = 2/3 → EF = <b>12 cm</b></div>
+<h3>四、面積比與體積比</h3>
+<div class="formula">面積比 = （相似比）²</div>
+<div class="formula">體積比 = （相似比）³</div>
+<div class="example"><b>例：</b>相似比 2 : 3 → 面積比 = 4 : 9；體積比 = 8 : 27</div>
+<div class="example"><b>例：</b>兩個相似三角形面積比為 16 : 25，求周界比。<br>邊長比 = √16 : √25 = <b>4 : 5</b>，即周界比 = 4 : 5</div>
+<h3>五、應用：測量高度</h3>
+<div class="example"><b>例：</b>小明身高 1.6 m，影子長 2 m；同一時刻旗杆影子長 12 m，求旗杆高度。<br>1.6/2 = h/12 → h = 1.6 × 12 ÷ 2 = <b>9.6 m</b></div>
+<div class="warn">⚠️ <b>常見錯誤</b>：把面積比直接當成邊長比（面積比是邊長比的平方）；對應邊找錯，導致比例寫反。</div>
+<div class="tip">🇲🇴 <b>澳門情境</b>：用相似三角形（影子比例法）可以測量澳門旅遊塔、大三巴牌坊等建築物的高度，不需攀爬。</div>`,
+en:`<h3>1. Similarity</h3>
+<p>Same shape, possibly different size. Corresponding angles equal; corresponding sides proportional.</p>
+<h3>2. Three tests</h3>
+<ul><li><b>AAA / AA</b></li><li><b>SSS</b> (all three sides proportional)</li><li><b>SAS</b></li></ul>
+<h3>3. Ratio of sides</h3>
+<div class="formula">If △ABC ~ △DEF then AB/DE = BC/EF = CA/FD = k</div>
+<div class="example">AB = 6, DE = 9, BC = 8 → EF = <b>12</b></div>
+<h3>4. Area & volume ratios</h3>
+<div class="formula">Area ratio = k²; Volume ratio = k³</div>
+<div class="example">k = 2:3 → areas <b>4:9</b>, volumes <b>8:27</b></div>
+<div class="example">Areas 16:25 → side ratio <b>4:5</b></div>
+<h3>5. Applications</h3>
+<div class="example">1.6 m person casts a 2 m shadow; a flagpole casts 12 m → h = <b>9.6 m</b></div>
+<div class="warn">⚠️ The area ratio is the <b>square</b> of the side ratio.</div>`},
+
+'f3-6':{
+zh:`<h3>一、三個三角比的定義</h3>
+<p>在<b>直角三角形</b>中，對於銳角 θ：</p>
+<div class="formula">sin θ = 對邊 ÷ 斜邊</div>
+<div class="formula">cos θ = 鄰邊 ÷ 斜邊</div>
+<div class="formula">tan θ = 對邊 ÷ 鄰邊</div>
+<p>記憶口訣：<b>SOH-CAH-TOA</b>。</p>
+<h3>二、基本例題</h3>
+<div class="example"><b>例：</b>直角三角形中，θ 的對邊 = 3、鄰邊 = 4、斜邊 = 5。<br>sin θ = 3/5 = <b>0.6</b><br>cos θ = 4/5 = <b>0.8</b><br>tan θ = 3/4 = <b>0.75</b></div>
+<h3>三、求未知邊長</h3>
+<div class="example"><b>例 1：</b>已知斜邊 = 10 cm，θ = 30°，求對邊。<br>sin 30° = 對邊/10 → 對邊 = 10 × 0.5 = <b>5 cm</b></div>
+<div class="example"><b>例 2：</b>已知鄰邊 = 8 cm，θ = 40°，求對邊。<br>tan 40° = 對邊/8 → 對邊 = 8 × 0.8391 ≈ <b>6.71 cm</b></div>
+<h3>四、特殊角的值</h3>
+<div class="formula">sin 30° = 1/2　cos 30° = √3/2　tan 30° = 1/√3</div>
+<div class="formula">sin 45° = cos 45° = √2/2　tan 45° = 1</div>
+<div class="formula">sin 60° = √3/2　cos 60° = 1/2　tan 60° = √3</div>
+<h3>五、仰角與俯角</h3>
+<ul>
+<li><b>仰角</b>：由水平線向上看的角</li>
+<li><b>俯角</b>：由水平線向下看的角</li>
+</ul>
+<div class="example"><b>例：</b>在距離澳門旅遊塔 100 m 處，測得塔頂仰角為 65°，求塔高。<br>tan 65° = h/100 → h = 100 × 2.1445 ≈ <b>214.5 m</b></div>
+<div class="warn">⚠️ <b>常見錯誤</b>：把對邊與鄰邊的位置搞錯（取決於你觀察的是哪個角）；計算仰角題時忘記加上測量者的身高。</div>
+<div class="tip">🇲🇴 <b>澳門情境</b>：在澳門旅遊塔外測量塔頂仰角，配合距離即可用 tan 計算塔高——這是測量學的基本方法。</div>`,
+en:`<h3>1. Definitions</h3>
+<div class="formula">sin θ = opposite / hypotenuse</div>
+<div class="formula">cos θ = adjacent / hypotenuse</div>
+<div class="formula">tan θ = opposite / adjacent</div>
+<p>Remember <b>SOH-CAH-TOA</b>.</p>
+<h3>2. Example</h3>
+<div class="example">Opposite 3, adjacent 4, hypotenuse 5 → sin θ = <b>0.6</b>, cos θ = <b>0.8</b>, tan θ = <b>0.75</b></div>
+<h3>3. Finding sides</h3>
+<div class="example">Hypotenuse 10, θ = 30° → opposite = 10 × 0.5 = <b>5 cm</b></div>
+<div class="example">Adjacent 8, θ = 40° → opposite = 8 × 0.8391 ≈ <b>6.71 cm</b></div>
+<h3>4. Special angles</h3>
+<div class="formula">sin 30° = ½, cos 30° = √3/2, tan 30° = 1/√3</div>
+<div class="formula">sin 45° = cos 45° = √2/2, tan 45° = 1</div>
+<div class="formula">sin 60° = √3/2, cos 60° = ½, tan 60° = √3</div>
+<h3>5. Angles of elevation & depression</h3>
+<div class="example">100 m from Macau Tower, elevation 65° → h = 100 tan 65° ≈ <b>214.5 m</b></div>
+<div class="warn">⚠️ Identify opposite and adjacent relative to the angle you are using.</div>`},
+
+'f3-7':{
+zh:`<h3>一、圓的基本元素</h3>
+<ul>
+<li><b>圓心</b> O、<b>半徑</b> r、<b>直徑</b> d = 2r</li>
+<li><b>弦</b>：圓上兩點連成的線段</li>
+<li><b>弧</b>：圓上的一段曲線</li>
+<li><b>切線</b>：與圓只有一個交點的直線</li>
+</ul>
+<h3>二、圓心角與圓周角</h3>
+<div class="formula">同一弧所對的圓心角 = 2 × 圓周角</div>
+<div class="example"><b>例：</b>某弧所對的圓心角為 100°，則該弧所對的圓周角 = 100° ÷ 2 = <b>50°</b></div>
+<div class="example"><b>例：</b>某弧所對的圓周角為 35°，則圓心角 = 2 × 35° = <b>70°</b></div>
+<h3>三、半圓上的圓周角</h3>
+<div class="formula">直徑所對的圓周角 = 90°</div>
+<div class="example"><b>例：</b>若 AB 是直徑，C 在圓周上，則 ∠ACB = <b>90°</b></div>
+<h3>四、同弓形的圓周角</h3>
+<div class="formula">同一弓形內的圓周角相等</div>
+<h3>五、切線的性質</h3>
+<ul>
+<li>切線<b>垂直</b>於過切點的半徑（∠OAT = 90°）</li>
+<li>由圓外一點引兩條切線，<b>切線長相等</b></li>
+</ul>
+<div class="example"><b>例：</b>PA、PB 為從 P 點引出的兩條切線，PA = 5 cm，則 PB = <b>5 cm</b>。</div>
+<h3>六、圓內接四邊形</h3>
+<div class="formula">圓內接四邊形的對角互補（相加 180°）</div>
+<div class="example"><b>例：</b>圓內接四邊形 ABCD 中 ∠A = 75°，則 ∠C = 180 − 75 = <b>105°</b>。</div>
+<h3>七、弧長與扇形面積</h3>
+<div class="formula">弧長 = 2πr × (θ/360°)　　扇形面積 = πr² × (θ/360°)</div>
+<div class="example"><b>例：</b>r = 6 cm、θ = 60° 的扇形，面積 = π × 36 × (60/360) = 6π ≈ <b>18.85 cm²</b></div>
+<div class="warn">⚠️ <b>常見錯誤</b>：把圓心角與圓周角的位置搞反；忘記「直徑所對的圓周角是 90°」這個常用結論。</div>
+<div class="tip">🇲🇴 <b>澳門情境</b>：議事亭前地的波浪碎石圖案，可以看成同心圓弧的設計，用弧長公式可估算鋪磚長度。</div>`,
+en:`<h3>1. Basic terms</h3>
+<p>Centre O, radius r, diameter d = 2r, chord, arc, tangent.</p>
+<h3>2. Angle at centre vs circumference</h3>
+<div class="formula">Angle at centre = 2 × angle at circumference (same arc)</div>
+<div class="example">Centre angle 100° → circumference angle <b>50°</b></div>
+<h3>3. Angle in a semicircle</h3>
+<div class="formula">Angle subtended by a diameter = 90°</div>
+<div class="example">AB is a diameter, C on the circle → ∠ACB = <b>90°</b></div>
+<h3>4. Angles in the same segment</h3>
+<div class="formula">Angles in the same segment are equal</div>
+<h3>5. Tangent properties</h3>
+<ul><li>Tangent ⊥ radius at the point of contact</li><li>Two tangents from an external point are equal in length</li></ul>
+<div class="example">PA = PB = <b>5 cm</b></div>
+<h3>6. Cyclic quadrilateral</h3>
+<div class="formula">Opposite angles of a cyclic quadrilateral are supplementary</div>
+<div class="example">∠A = 75° → ∠C = <b>105°</b></div>
+<h3>7. Arc length & sector area</h3>
+<div class="formula">Arc = 2πr × θ/360°; Sector area = πr² × θ/360°</div>
+<div class="example">r = 6, θ = 60° → area = 6π ≈ <b>18.85 cm²</b></div>
+<div class="warn">⚠️ Do not confuse angle at centre with angle at circumference.</div>`},
+
+'f3-8':{
+zh:`<h3>一、三個集中趨勢量度</h3>
+<h4>平均數（Mean）</h4>
+<div class="formula">平均數 = 總和 ÷ 數據個數</div>
+<p>優點：使用全部數據；缺點：易受極端值影響。</p>
+<div class="example"><b>例：</b>2, 3, 3, 5, 9 → 平均 = 22 ÷ 5 = <b>4.4</b></div>
+<h4>中位數（Median）</h4>
+<p>把數據排序後位於中間的數。奇數個取中間一個；偶數個取中間兩個的平均數。</p>
+<div class="example"><b>例：</b>2, 3, 3, 5, 9 → 中位數 = <b>3</b><br>2, 3, 3, 5, 9, 10 → 中位數 = (3 + 5) ÷ 2 = <b>4</b></div>
+<h4>眾數（Mode）</h4>
+<p>出現次數最多的數據。可能有零個、一個或多個眾數。</p>
+<div class="example"><b>例：</b>2, 3, 3, 5, 9 → 眾數 = <b>3</b></div>
+<h3>二、三者的比較</h3>
+<ul>
+<li>數據有極端值（如收入、房價）→ 用<b>中位數</b>更能代表整體</li>
+<li>數據較平均 → 三者接近</li>
+<li>分類數據（如鞋碼、顏色）→ 用<b>眾數</b></li>
+</ul>
+<div class="example"><b>例：</b>某班 5 人月薪為 12000、13000、14000、15000、80000 元。<br>平均 = 26800 元（受 80000 嚴重拉高）<br>中位數 = <b>14000 元</b>（更能代表一般水平）</div>
+<h3>三、由平均數反求數據</h3>
+<div class="formula">總和 = 平均數 × 個數</div>
+<div class="example"><b>例：</b>五位同學平均分 78 分，其中四位為 72、85、90、68，求第五位。<br>總和 = 78 × 5 = 390<br>第五位 = 390 − (72+85+90+68) = 390 − 315 = <b>75 分</b></div>
+<h3>四、加權平均數</h3>
+<div class="formula">加權平均 = Σ(數值 × 權重) ÷ Σ權重</div>
+<div class="example"><b>例：</b>平時分 80（佔 30%）、考試 70（佔 70%）。<br>總分 = 80 × 0.3 + 70 × 0.7 = 24 + 49 = <b>73 分</b></div>
+<div class="warn">⚠️ <b>常見錯誤</b>：求中位數前忘記排序；把「眾數」誤解為「中間的數」；加權平均時權重沒有加總為 1。</div>
+<div class="tip">🇲🇴 <b>澳門情境</b>：比較澳門不同地區的樓價時，中位數比平均數更能反映一般市民的負擔水平。</div>`,
+en:`<h3>1. Three measures</h3>
+<h4>Mean</h4>
+<div class="formula">Mean = sum ÷ count</div>
+<p>Uses all data, but is affected by extreme values.</p>
+<div class="example">2,3,3,5,9 → mean = <b>4.4</b></div>
+<h4>Median</h4>
+<p>Sort the data; take the middle value (or the mean of the two middle values).</p>
+<div class="example">2,3,3,5,9 → <b>3</b>; 2,3,3,5,9,10 → <b>4</b></div>
+<h4>Mode</h4>
+<p>The most frequent value.</p>
+<div class="example">2,3,3,5,9 → mode = <b>3</b></div>
+<h3>2. Comparison</h3>
+<p>With extreme values, the median is more representative. For categorical data, use the mode.</p>
+<div class="example">12 000, 13 000, 14 000, 15 000, 80 000 → mean 26 800 but median <b>14 000</b></div>
+<h3>3. Finding a missing value</h3>
+<div class="formula">Sum = mean × count</div>
+<div class="example">Mean 78 of 5 scores; four are 72, 85, 90, 68 → fifth = <b>75</b></div>
+<h3>4. Weighted mean</h3>
+<div class="formula">Weighted mean = Σ(value × weight) ÷ Σweight</div>
+<div class="example">80 (30%) and 70 (70%) → <b>73</b></div>
+<div class="warn">⚠️ Sort the data before finding the median.</div>`}
+};
+
+/* ============================================================
+   5. 題庫（按課題 × 難度）
+   ============================================================ */
+const BANK = {};
+
+/* --- 通用出題輔助 --- */
+function mk(qzh, qen, ans, exzh, exen, tol){
+  return {q:{zh:qzh,en:qen}, ans, ex:{zh:exzh,en:exen}, tol: tol==null?0.01:tol};
+}
+
+/* ============ F1 ============ */
+BANK['f1-1'] = {
+  1:[
+    ()=>{const a=R(-12,12),b=R(-12,12);
+      const same = (a>=0)===(b>=0);
+      return mk(`計算 ${F(a)} + ${F(b)}`,`Calculate ${F(a)} + ${F(b)}`, a+b,
+        same
+          ? `兩數<b>同號</b>，取相同符號，絕對值相加：<br>|${a}| + |${b}| = ${Math.abs(a)}+${Math.abs(b)} = ${Math.abs(a)+Math.abs(b)}<br>所以結果為 <b>${F(a+b)}</b>。`
+          : `兩數<b>異號</b>，取絕對值較大者的符號，絕對值相減：<br>|${Math.abs(a)>Math.abs(b)?a:b}| − |${Math.abs(a)>Math.abs(b)?b:a}| = ${Math.abs(Math.abs(a)-Math.abs(b))}<br>所以結果為 <b>${F(a+b)}</b>。`,
+        same
+          ? `Same signs: keep the sign and add absolute values → <b>${F(a+b)}</b>.`
+          : `Different signs: take the sign of the larger absolute value and subtract → <b>${F(a+b)}</b>.`);
+    },
+    ()=>{const a=R(-9,9)||3, b=R(-9,9)||-4;
+      const neg = (a<0?1:0)+(b<0?1:0);
+      return mk(`計算 ${F(a)} × ${F(b,true)}`,`Calculate ${F(a)} × ${F(b,true)}`, a*b,
+        `先判斷符號：負號有 ${neg} 個，${neg%2===0?'偶數 → 結果為正':'奇數 → 結果為負'}。<br>絕對值：${Math.abs(a)} × ${Math.abs(b)} = ${Math.abs(a*b)}<br>所以 <b>${F(a*b)}</b>。`,
+        `Count negative signs: ${neg} → ${neg%2===0?'positive':'negative'}. Absolute value ${Math.abs(a*b)} → <b>${F(a*b)}</b>.`);
+    }
+  ],
+  2:[
+    ()=>{const a=R(-15,15), b=R(-15,15), c=R(-15,15);
+      return mk(`計算 ${F(a)} − ${F(b)} + ${F(c)}`,`Calculate ${F(a)} − ${F(b)} + ${F(c)}`, a-b+c,
+        `減去一個數 = 加上它的相反數：<br>${F(a)} − ${F(b)} = ${F(a)} + ${F(-b)} = ${F(a-b)}<br>再加上 ${F(c)}：${F(a-b)} + ${F(c)} = <b>${F(a-b+c)}</b>`,
+        `a − b = a + (−b) → ${F(a-b)}, then + ${F(c)} = <b>${F(a-b+c)}</b>.`);
+    },
+    ()=>{const a=R(2,9), b=R(-9,-2), c=R(2,6);
+      return mk(`計算 ${F(a)} × ${F(b,true)} × ${F(c)}`,`Calculate ${F(a)} × ${F(b,true)} × ${F(c)}`, a*b*c,
+        `負號有 1 個（奇數）→ 結果為負。<br>絕對值：${a} × ${Math.abs(b)} × ${c} = ${a*Math.abs(b)*c}<br>所以 <b>${F(a*b*c)}</b>。`,
+        `One negative factor → negative result. ${a}×${Math.abs(b)}×${c} = ${a*Math.abs(b)*c} → <b>${F(a*b*c)}</b>.`);
+    }
+  ],
+  3:[
+    ()=>{const a=R(-8,8), b=R(-8,8), c=R(2,5);
+      return mk(`計算 (${F(a)} + ${F(b)}) × ${F(c,true)}`,`Calculate (${F(a)} + ${F(b)}) × ${F(c,true)}`, (a+b)*c,
+        `先算括號：${F(a)} + ${F(b)} = ${F(a+b)}<br>再乘：${F(a+b)} × ${F(c,true)}。<br>負號 ${((a+b)<0?1:0)+(c<0?1:0)} 個 → ${(((a+b)<0?1:0)+(c<0?1:0))%2===0?'正':'負'}<br>絕對值 ${Math.abs(a+b)} × ${Math.abs(c)} = ${Math.abs((a+b)*c)}<br>答案 <b>${F((a+b)*c)}</b>。`,
+        `Brackets first: ${F(a+b)}. Then ${F(a+b)} × ${F(c,true)} = <b>${F((a+b)*c)}</b>.`);
+    },
+    ()=>{const a=R(-6,6), b=R(-6,6), c=R(2,5);
+      return mk(`計算 ${F(a)} − (${F(b)} − ${F(c,true)})`,`Calculate ${F(a)} − (${F(b)} − ${F(c,true)})`, a-(b-c),
+        `先算括號：${F(b)} − ${F(c,true)} = ${F(b-c)}<br>再減：${F(a)} − ${F(b-c)} = ${F(a)} + ${F(-(b-c))} = <b>${F(a-(b-c))}</b>`,
+        `Inner bracket: ${F(b-c)}. Then ${F(a)} − ${F(b-c)} = <b>${F(a-(b-c))}</b>.`);
+    }
+  ]
+};
+
+BANK['f1-2'] = {
+  1:[
+    ()=>{const a=R(2,9), x0=R(-9,9), b=R(-15,15), c=a*x0+b;
+      return mk(`解方程 ${a}x ${b<0?'−':'+'} ${Math.abs(b)} = ${c}，求 x。`,
+                `Solve ${a}x ${b<0?'−':'+'} ${Math.abs(b)} = ${c} for x.`, x0,
+        `移項：${a}x = ${c} ${b<0?'+':'−'} ${Math.abs(b)} = ${c-b}<br>兩邊同除以 ${a}：x = ${c-b} ÷ ${a} = <b>${x0}</b><br>驗算：${a}×${x0} ${b<0?'−':'+'} ${Math.abs(b)} = ${c} ✅`,
+        `Move terms: ${a}x = ${c-b}. Divide by ${a}: x = <b>${x0}</b>.`);
+    },
+    ()=>{const a=R(2,6), b=R(2,12), c=a*b;
+      return mk(`解方程 x / ${a} = ${b}，求 x。`,`Solve x ÷ ${a} = ${b} for x.`, c,
+        `兩邊同乘以 ${a}：x = ${b} × ${a} = <b>${c}</b>`,
+        `Multiply both sides by ${a}: x = <b>${c}</b>.`);
+    }
+  ],
+  2:[
+    ()=>{const a=R(2,6), b=R(-8,8), c=R(6,30);
+      return mk(`解方程 ${a}(x ${b<0?'+':'−'} ${Math.abs(b)}) = ${c}，求 x。`,
+                `Solve ${a}(x ${b<0?'+':'−'} ${Math.abs(b)}) = ${c} for x.`,
+                c/a-b,
+        `展開：${a}x ${b<0?'−':'+'} ${a*Math.abs(b)} = ${c}<br>移項：${a}x = ${c} ${b<0?'+':'−'} ${a*Math.abs(b)} = ${c-a*b}<br>x = ${c-a*b} ÷ ${a} = <b>${c/a-b}</b>`,
+        `Expand: ${a}x = ${c-a*b}. Then x = <b>${c/a-b}</b>.`);
+    },
+    ()=>{const a=R(3,9), b=R(2,8), c=a+b;
+      return mk(`解方程 ${a}x = ${b}x + ${c*b}，求 x。`,`Solve ${a}x = ${b}x + ${c*b} for x.`, c*b/(a-b),
+        `移項：${a}x − ${b}x = ${c*b}<br>${a-b}x = ${c*b}<br>x = ${c*b} ÷ ${a-b} = <b>${c*b/(a-b)}</b>`,
+        `${a}x − ${b}x = ${c*b} → x = <b>${c*b/(a-b)}</b>.`);
+    }
+  ],
+  3:[
+    ()=>{const a=R(2,8), b=R(-9,9), c=R(2,8), d=R(-9,9);
+      let x0; do{ x0=R(-6,6); }while(a-c===0);
+      const bb = b-d, cc = (a-c)*x0;
+      return mk(`解方程 ${a}x ${b<0?'−':'+'} ${Math.abs(b)} = ${c}x ${d<0?'−':'+'} ${Math.abs(d)}，求 x。`,
+                `Solve ${a}x ${b<0?'−':'+'} ${Math.abs(b)} = ${c}x ${d<0?'−':'+'} ${Math.abs(d)} for x.`,
+                x0,
+        `把含 x 的項移到左邊、常數移到右邊：<br>${a}x − ${c}x = ${F(d)} ${b<0?'+':'−'} ${Math.abs(b)}<br>${a-c}x = ${F(d-b)}<br>x = ${F(d-b)} ÷ ${a-c} = <b>${x0}</b>`,
+        `Collect x-terms: ${a-c}x = ${F(d-b)} → x = <b>${x0}</b>.`);
+    }
+  ]
+};
+
+BANK['f1-3'] = {
+  1:[
+    ()=>{const p=P([5,10,20,25,50,75]), n=R(2,20)*20;
+      return mk(`求 ${n} 的 ${p}%。`,`Find ${p}% of ${n}.`, n*p/100,
+        `${p}% = ${p}÷100 = ${p/100}<br>${n} × ${p/100} = <b>${n*p/100}</b>`,
+        `${p}% = ${p/100}. ${n} × ${p/100} = <b>${n*p/100}</b>.`);
+    },
+    ()=>{const part=R(3,15)*2, tot=part+R(5,20)*2;
+      return mk(`某班有 ${tot} 人，其中 ${part} 人及格。求及格率（%）。（答案取一位小數）`,
+                `In a class of ${tot}, ${part} passed. Find the pass rate (%). (1 d.p.)`,
+                R2(part/tot*100), `及格率 = 及格人數 ÷ 總人數 × 100%<br>= ${part} ÷ ${tot} × 100% = <b>${R2(part/tot*100)}%</b>`,
+                `Pass rate = ${part} ÷ ${tot} × 100% = <b>${R2(part/tot*100)}%</b>.`, 0.15);
+    }
+  ],
+  2:[
+    ()=>{const price=R(5,40)*20, d=P([10,20,25,30,40]);
+      return mk(`一件貨品原價 $${price}，現以原價的 ${100-d}% 出售，求售價。`,
+                `An item costs $${price} and is sold at ${100-d}% of the marked price. Find the selling price.`,
+                price*(100-d)/100,
+        `折扣率 = ${100-d}% = ${(100-d)/100}<br>售價 = ${price} × ${(100-d)/100} = <b>$${price*(100-d)/100}</b><br>（即節省了 $${price*d/100}）`,
+        `Selling price = ${price} × ${(100-d)/100} = <b>$${price*(100-d)/100}</b>.`);
+    },
+    ()=>{const old=R(10,50)*10, p=P([10,20,25,50]);
+      return mk(`某商品由 $${old} 加價到 $${old*(100+p)/100}，求百分增加（%）。`,
+                `A price rises from $${old} to $${old*(100+p)/100}. Find the percentage increase (%).`,
+                p,
+        `百分增加 = (新值 − 舊值) ÷ 舊值 × 100%<br>= (${old*(100+p)/100} − ${old}) ÷ ${old} × 100%<br>= ${old*p/100} ÷ ${old} × 100% = <b>${p}%</b>`,
+        `(new − old) ÷ old × 100% = <b>${p}%</b>.`);
+    }
+  ],
+  3:[
+    ()=>{const p=R(2,6)*10, v=R(2,12)*100;
+      const newv = R2(v*(1-p/100)*(1+p/100));
+      return mk(`某商品原價 $${v}，先加價 ${p}%，再減價 ${p}%。求最終售價（取整數）。`,
+                `An item costs $${v}. Its price rises by ${p}% then falls by ${p}%. Find the final price (nearest integer).`,
+                Math.round(newv),
+        `第一次：${v} × (1 + ${p}%) = ${R2(v*(1+p/100))}<br>第二次以新價為基數：${R2(v*(1+p/100))} × (1 − ${p}%) = <b>${Math.round(newv)}</b><br>注意：<b>不等於原價</b>，因為兩次的基數不同。`,
+        `After +${p}%: ${R2(v*(1+p/100))}. After −${p}%: <b>${Math.round(newv)}</b>. It does not return to the original price.`, 0.6);
+    },
+    ()=>{const total=R(20,60)*10, p=R(10,40);
+      return mk(`某校有 ${p}% 的學生戴眼鏡，共 ${R2(total*p/100)} 人。求全校人數。`,
+                `${p}% of students wear glasses, which is ${R2(total*p/100)} students. Find the total.`,
+                total,
+        `全部 = 部分 ÷ 百分數<br>= ${R2(total*p/100)} ÷ ${p}% = ${R2(total*p/100)} ÷ ${p/100} = <b>${total} 人</b>`,
+        `Total = ${R2(total*p/100)} ÷ ${p/100} = <b>${total}</b>.`);
+    }
+  ]
+};
+
+BANK['f1-4'] = {
+  1:[
+    ()=>{const a=R(2,9), b=R(2,9), k=R(2,6);
+      return mk(`已知 ${a} : ${b} = ${a*k} : x，求 x。`,`Given ${a} : ${b} = ${a*k} : x, find x.`, b*k,
+        `交叉相乘（外項積 = 內項積）：<br>${a} × x = ${b} × ${a*k}<br>${a}x = ${b*a*k}<br>x = ${b*a*k} ÷ ${a} = <b>${b*k}</b>`,
+        `Cross multiply: ${a}x = ${b*a*k} → x = <b>${b*k}</b>.`);
+    },
+    ()=>{const a=R(2,8), b=R(2,8), g=(function gcd(x,y){return y?gcd(y,x%y):x})(a,b);
+      return mk(`化簡比 ${a*3} : ${b*3}（以最簡整數比表示，答案格式如 2:3）。`,
+                `Simplify ${a*3} : ${b*3} (format like 2:3).`, a/g+':'+(b/g),
+        `兩項同除以最大公因數 ${g*3}：<br>${a*3} : ${b*3} = <b>${a/g} : ${b/g}</b>`,
+        `Divide both by ${g*3} → <b>${a/g} : ${b/g}</b>.`, null);
+    }
+  ],
+  2:[
+    ()=>{const a=R(2,7), b=R(2,7), total=(a+b)*R(5,20);
+      return mk(`把 $${total} 按 ${a} : ${b} 分配，求較大的一份。`,
+                `Share $${total} in the ratio ${a} : ${b}. Find the larger share.`,
+                total*Math.max(a,b)/(a+b),
+        `總份數 = ${a} + ${b} = ${a+b}<br>每份 = ${total} ÷ ${a+b} = ${total/(a+b)}<br>較大的一份 = ${Math.max(a,b)} × ${total/(a+b)} = <b>$${total*Math.max(a,b)/(a+b)}</b>`,
+        `Total parts ${a+b}, each $${total/(a+b)}. Larger share = <b>$${total*Math.max(a,b)/(a+b)}</b>.`);
+    },
+    ()=>{const a=R(2,5), b=R(2,5), c=R(2,5);
+      return mk(`a : b = ${a} : ${b}，b : c = ${b} : ${c}。求 a : c 的比值（以最簡分數或小數表示）。`,
+                `a : b = ${a} : ${b} and b : c = ${b} : ${c}. Find a : c (as a decimal).`,
+                R2(a/c), `a : b : c = ${a} : ${b} : ${c}<br>所以 a : c = ${a} : ${c}，比值 = ${a}/${c} ≈ <b>${R2(a/c)}</b>`,
+                `a : b : c = ${a} : ${b} : ${c} → a : c = <b>${a} : ${c}</b>.`, 0.02);
+    }
+  ],
+  3:[
+    ()=>{const d=R(4,30)*10, t=pick([0.5,0.75,1,1.5,2,2.5,3]);
+      return mk(`汽車 ${t} 小時行駛 ${d} km，求平均速度（km/h）。`,
+                `A car travels ${d} km in ${t} h. Find the average speed (km/h).`,
+                R2(d/t), `速度 = 距離 ÷ 時間<br>= ${d} ÷ ${t} = <b>${R2(d/t)} km/h</b>`,
+                `Speed = ${d} ÷ ${t} = <b>${R2(d/t)} km/h</b>.`, 0.05);
+    },
+    ()=>{const w1=R(2,6), d1=R(4,20), w2=R(2,8);
+      return mk(`${w1} 個人完成一項工程需 ${d1} 天。若由 ${w2} 個人做（工作效率相同），需多少天？`,
+                `${w1} workers take ${d1} days. How many days would ${w2} workers take?`,
+                R2(w1*d1/w2),
+        `人數 × 天數 = 常數（總工作量）<br>${w1} × ${d1} = ${w1*d1}<br>${w2} × t = ${w1*d1} → t = ${w1*d1} ÷ ${w2} = <b>${R2(w1*d1/w2)} 天</b>`,
+        `Work = ${w1*d1} man-days. t = ${w1*d1} ÷ ${w2} = <b>${R2(w1*d1/w2)} days</b>.`, 0.05);
+    }
+  ]
+};
+
+BANK['f1-5'] = {
+  1:[
+    ()=>{const n=R(100,9999)/100;
+      return mk(`把 ${n} 四捨五入至小數後一位。`,`Round ${n} to 1 decimal place.`,
+        R2(Math.round(n*10)/10),
+        `看第二位小數：${String(n).split('.')[1] ? String(n).split('.')[1][1]||'0' : '0'}。<br>${Math.round(n*10)/10 > n ? '≥5，進一' : '&lt;5，捨去'}<br>答案 <b>${R2(Math.round(n*10)/10)}</b>`,
+        `Look at the second decimal digit → <b>${R2(Math.round(n*10)/10)}</b>.`, 0.001);
+    },
+    ()=>{const n=R(1000,99999);
+      return mk(`把 ${n} 四捨五入至千位。`,`Round ${n} to the nearest thousand.`,
+        Math.round(n/1000)*1000,
+        `看百位數字：${Math.floor(n/100)%10}。<br>${Math.floor(n/100)%10>=5?'≥5，進一':'&lt;5，捨去'}<br>答案 <b>${Math.round(n/1000)*1000}</b>`,
+        `Hundreds digit is ${Math.floor(n/100)%10} → <b>${Math.round(n/1000)*1000}</b>.`, 0.5);
+    }
+  ],
+  2:[
+    ()=>{const n=pick([0.00456,0.0305,12.30,0.000420,2050]);
+      const s=n.toString().replace(/^0\.0*/,'').replace(/\./,'').replace(/0+$/,'') || '0';
+      const sig = String(n).replace(/^0\.0*/,'').replace('.','').replace(/0+$/,'').length;
+      return mk(`數字 ${n} 有多少個有效數字？`,`How many significant figures does ${n} have?`,
+        sig, `由第一個非零數字開始數，數到最後一位有意義的數字（包括中間與末尾的 0）。<br>${n} → <b>${sig} 個有效數字</b>`,
+        `Count from the first non-zero digit → <b>${sig} s.f.</b>`, 0.1);
+    },
+    ()=>{const a=R(2,9)*1000, b=R(2,9)*100;
+      return mk(`估算 ${a} × ${b}（以科學記數法表示，如 1.2e6 請輸入 1200000）。`,
+                `Estimate ${a} × ${b}.`, a*b,
+        `取一位有效數字估算：<br>${a} ≈ ${Math.round(a/1000)*1000}，${b} ≈ ${Math.round(b/100)*100}<br>估算值 ≈ ${Math.round(a/1000)*1000} × ${Math.round(b/100)*100} = ${Math.round(a/1000)*1000*Math.round(b/100)*100}<br>實際值 = <b>${a*b}</b>`,
+        `Actual value = <b>${a*b}</b>.`, 0.5);
+    }
+  ],
+  3:[
+    ()=>{const a=R(3,9)*10, b=R(3,9)*10, c=a+b;
+      return mk(`估算 ${a} × ${b} ÷ ${c}（答案取整數）。`,`Estimate ${a} × ${b} ÷ ${c} (integer).`,
+        Math.round(a*b/c),
+        `${a} × ${b} = ${a*b}<br>${a*b} ÷ ${c} = ${R2(a*b/c)}<br>取整數 ≈ <b>${Math.round(a*b/c)}</b>`,
+        `${a*b} ÷ ${c} ≈ <b>${Math.round(a*b/c)}</b>.`, 0.5);
+    },
+    ()=>{const err=R(2,9)/10, t=R(20,90);
+      return mk(`某數的真值為 ${t}，量度值為 ${t+err}。求絕對誤差。`,
+                `The true value is ${t} and the measured value is ${t+err}. Find the absolute error.`,
+                R2(err),
+        `絕對誤差 = |近似值 − 真值|<br>= |${t+err} − ${t}| = <b>${R2(err)}</b>`,
+        `|${t+err} − ${t}| = <b>${R2(err)}</b>.`, 0.005);
+    }
+  ]
+};
+
+BANK['f1-6'] = {
+  1:[
+    ()=>{const a=R(30,80), b=R(20,180-a-20);
+      return mk(`三角形其中兩個內角為 ${a}° 和 ${b}°，求第三個內角（度）。`,
+                `Two angles of a triangle are ${a}° and ${b}°. Find the third angle (degrees).`,
+                180-a-b,
+        `三角形內角和 = 180°<br>第三角 = 180° − ${a}° − ${b}° = <b>${180-a-b}°</b>`,
+        `180° − ${a}° − ${b}° = <b>${180-a-b}°</b>.`, 0.1);
+    },
+    ()=>{const a=R(20,70);
+      return mk(`一個角的補角是 ${a}°，求這個角（度）。`,`The complement of an angle is ${a}°. Find the angle (degrees).`,
+        90-a, `互補角之和 = 90°<br>所求角 = 90° − ${a}° = <b>${90-a}°</b>`,
+        `90° − ${a}° = <b>${90-a}°</b>.`, 0.1);
+    }
+  ],
+  2:[
+    ()=>{const a=R(40,140);
+      return mk(`兩平行線被一直線所截，其中一個內錯角為 ${a}°，求另一個內錯角（度）。`,
+                `Two parallel lines are cut by a transversal. One alternate angle is ${a}°. Find the other (degrees).`,
+                a, `平行線的<b>內錯角相等</b>，所以另一個內錯角也是 <b>${a}°</b>。`,
+        `Alternate angles are equal → <b>${a}°</b>.`, 0.1);
+    },
+    ()=>{const a=R(40,140);
+      return mk(`兩平行線被一直線所截，其中一個同位角為 ${a}°，求與它同旁內角（度）。`,
+                `One corresponding angle is ${a}°. Find the co-interior angle on the same side (degrees).`,
+                180-a, `同位角相等，所以對應的內角也是 ${a}°。<br>同旁內角互補：180° − ${a}° = <b>${180-a}°</b>`,
+        `Co-interior angles are supplementary: 180° − ${a}° = <b>${180-a}°</b>.`, 0.1);
+    }
+  ],
+  3:[
+    ()=>{const n=R(5,12);
+      return mk(`求 ${n} 邊形的內角和（度）。`,`Find the sum of the interior angles of a ${n}-sided polygon (degrees).`,
+        (n-2)*180, `n 邊形內角和 = (n − 2) × 180°<br>= (${n} − 2) × 180° = ${n-2} × 180° = <b>${(n-2)*180}°</b>`,
+        `(${n} − 2) × 180° = <b>${(n-2)*180}°</b>.`, 0.5);
+    },
+    ()=>{const n=R(5,12);
+      return mk(`正 ${n} 邊形每個內角是多少度？（取一位小數）`,
+                `Find each interior angle of a regular ${n}-gon (1 d.p.).`,
+                R2((n-2)*180/n),
+        `每個內角 = (n − 2) × 180° ÷ n<br>= (${n}−2) × 180° ÷ ${n}<br>= ${(n-2)*180}° ÷ ${n} = <b>${R2((n-2)*180/n)}°</b>`,
+        `(${n}−2)×180° ÷ ${n} = <b>${R2((n-2)*180/n)}°</b>.`, 0.15);
+    }
+  ]
+};
+
+BANK['f1-7'] = {
+  1:[
+    ()=>{const w=R(3,15), h=R(3,15);
+      return mk(`長方形長 ${w} cm、闊 ${h} cm，求面積（cm²）。`,
+                `A rectangle is ${w} cm by ${h} cm. Find its area (cm²).`, w*h,
+        `長方形面積 = 長 × 闊 = ${w} × ${h} = <b>${w*h} cm²</b>`,
+        `${w} × ${h} = <b>${w*h} cm²</b>.`, 0.1);
+    },
+    ()=>{const b=R(4,20)*2, h=R(3,15);
+      return mk(`三角形底 ${b} cm、高 ${h} cm，求面積（cm²）。`,
+                `A triangle has base ${b} cm and height ${h} cm. Find its area (cm²).`,
+                b*h/2, `三角形面積 = 底 × 高 ÷ 2 = ${b} × ${h} ÷ 2 = <b>${b*h/2} cm²</b>`,
+        `${b} × ${h} ÷ 2 = <b>${b*h/2} cm²</b>.`, 0.1);
+    }
+  ],
+  2:[
+    ()=>{const a=R(2,10), b=R(11,20), h=R(2,10)*2;
+      return mk(`梯形上底 ${a} cm、下底 ${b} cm、高 ${h} cm，求面積（cm²）。`,
+                `A trapezium has parallel sides ${a} cm and ${b} cm and height ${h} cm. Find its area (cm²).`,
+                (a+b)*h/2,
+        `梯形面積 = (上底 + 下底) × 高 ÷ 2<br>= (${a} + ${b}) × ${h} ÷ 2<br>= ${a+b} × ${h} ÷ 2 = <b>${(a+b)*h/2} cm²</b>`,
+        `(${a}+${b}) × ${h} ÷ 2 = <b>${(a+b)*h/2} cm²</b>.`, 0.1);
+    },
+    ()=>{const b=R(4,15), h=R(3,12);
+      return mk(`平行四邊形底 ${b} cm、高 ${h} cm，求面積（cm²）。`,
+                `A parallelogram has base ${b} cm and height ${h} cm. Find its area (cm²).`,
+                b*h, `平行四邊形面積 = 底 × 高 = ${b} × ${h} = <b>${b*h} cm²</b>`,
+        `${b} × ${h} = <b>${b*h} cm²</b>.`, 0.1);
+    }
+  ],
+  3:[
+    ()=>{const r=R(2,12);
+      return mk(`圓的半徑 ${r} cm，求面積（cm²，取 π = 3.14，一位小數）。`,
+                `A circle has radius ${r} cm. Find its area (π = 3.14, 1 d.p.).`,
+                R2(3.14*r*r), `圓面積 = πr²<br>= 3.14 × ${r}² = 3.14 × ${r*r} = <b>${R2(3.14*r*r)} cm²</b>`,
+        `πr² = 3.14 × ${r*r} = <b>${R2(3.14*r*r)} cm²</b>.`, 0.15);
+    },
+    ()=>{const l=R(8,20), w=R(5,15), b=R(2,5), h=R(2,5);
+      return mk(`長 ${l} cm、闊 ${w} cm 的長方形，右上角挖去一個底 ${b} cm、高 ${h} cm 的三角形。求餘下面積（cm²）。`,
+                `A ${l}×${w} rectangle has a ${b}×${h} triangle cut from a corner. Find the remaining area (cm²).`,
+                l*w - b*h/2,
+        `長方形面積 = ${l} × ${w} = ${l*w} cm²<br>三角形面積 = ${b} × ${h} ÷ 2 = ${b*h/2} cm²<br>餘下面積 = ${l*w} − ${b*h/2} = <b>${l*w-b*h/2} cm²</b>`,
+        `${l*w} − ${b*h/2} = <b>${l*w-b*h/2} cm²</b>.`, 0.1);
+    }
+  ]
+};
+
+BANK['f1-8'] = {
+  1:[
+    ()=>{const a=R(50,100), b=R(50,100), c=R(50,100), d=R(50,100);
+      return mk(`求 ${a}、${b}、${c}、${d} 的平均數。`,`Find the mean of ${a}, ${b}, ${c}, ${d}.`,
+        R2((a+b+c+d)/4),
+        `平均數 = 總和 ÷ 個數<br>總和 = ${a+b+c+d}<br>平均 = ${a+b+c+d} ÷ 4 = <b>${R2((a+b+c+d)/4)}</b>`,
+        `Sum ${a+b+c+d} ÷ 4 = <b>${R2((a+b+c+d)/4)}</b>.`, 0.05);
+    }
+  ],
+  2:[
+    ()=>{const nums=Array.from({length:5},()=>R(1,30)).sort((a,b)=>a-b);
+      return mk(`求 ${nums.join('、')} 的中位數。`,`Find the median of ${nums.join(', ')}.`,
+        nums[2], `把數據排序：${nums.join('、')}<br>共 5 個數據，中位數是第 3 個：<b>${nums[2]}</b>`,
+        `Sorted: ${nums.join(', ')}. The 3rd value is <b>${nums[2]}</b>.`, 0.01);
+    },
+    ()=>{const nums=[R(1,9),R(1,9),R(1,9),R(1,9)].sort((a,b)=>a-b);
+      return mk(`求 ${nums.join('、')} 的中位數。`,`Find the median of ${nums.join(', ')}.`,
+        R2((nums[1]+nums[2])/2),
+        `排序後：${nums.join('、')}<br>共 4 個（偶數），中位數 = 中間兩個的平均<br>= (${nums[1]} + ${nums[2]}) ÷ 2 = <b>${R2((nums[1]+nums[2])/2)}</b>`,
+        `Sorted: ${nums.join(', ')}. Median = (${nums[1]}+${nums[2]})/2 = <b>${R2((nums[1]+nums[2])/2)}</b>.`, 0.02);
+    }
+  ],
+  3:[
+    ()=>{const mean=R(60,90), n=5, arr=Array.from({length:4},()=>R(50,100));
+      const miss = mean*n - arr.reduce((a,b)=>a+b,0);
+      return mk(`五位同學平均分 ${mean} 分，其中四位為 ${arr.join('、')}，求第五位分數。`,
+                `The mean of 5 scores is ${mean}. Four are ${arr.join(', ')}. Find the fifth.`,
+                miss,
+        `總和 = 平均 × 個數 = ${mean} × 5 = ${mean*n}<br>已知四位之和 = ${arr.reduce((a,b)=>a+b,0)}<br>第五位 = ${mean*n} − ${arr.reduce((a,b)=>a+b,0)} = <b>${miss}</b>`,
+        `Total ${mean*n} − ${arr.reduce((a,b)=>a+b,0)} = <b>${miss}</b>.`, 0.01);
+    },
+    ()=>{const w=R(20,40), s1=R(60,90), s2=R(60,90);
+      return mk(`平時分 ${s1} 佔 ${w}%，考試分 ${s2} 佔 ${100-w}%。求加權總分（取一位小數）。`,
+                `Coursework ${s1} worth ${w}%, exam ${s2} worth ${100-w}%. Find the weighted total (1 d.p.).`,
+                R2(s1*w/100 + s2*(100-w)/100),
+        `加權總分 = ${s1} × ${w}% + ${s2} × ${100-w}%<br>= ${R2(s1*w/100)} + ${R2(s2*(100-w)/100)} = <b>${R2(s1*w/100+s2*(100-w)/100)}</b>`,
+        `${R2(s1*w/100)} + ${R2(s2*(100-w)/100)} = <b>${R2(s1*w/100+s2*(100-w)/100)}</b>.`, 0.05);
+    }
+  ]
+};
+
+/* ============ F2 ============ */
+BANK['f2-1'] = {
+  1:[
+    ()=>{const a=R(2,4), m=R(2,4), n=R(2,4);
+      return mk(`計算 ${a}<sup>${m}</sup> × ${a}<sup>${n}</sup> 的值。`,`Evaluate ${a}<sup>${m}</sup> × ${a}<sup>${n}</sup>.`,
+        Math.pow(a,m+n),
+        `同底相乘，指數相加：<br>${a}<sup>${m}</sup> × ${a}<sup>${n}</sup> = ${a}<sup>${m}+${n}</sup> = ${a}<sup>${m+n}</sup> = <b>${Math.pow(a,m+n)}</b>`,
+        `Add the indices: ${a}<sup>${m+n}</sup> = <b>${Math.pow(a,m+n)}</b>.`, 0.01);
+    },
+    ()=>{const a=R(2,5), m=R(4,7), n=R(1,3);
+      return mk(`計算 ${a}<sup>${m}</sup> ÷ ${a}<sup>${n}</sup> 的值。`,`Evaluate ${a}<sup>${m}</sup> ÷ ${a}<sup>${n}</sup>.`,
+        Math.pow(a,m-n),
+        `同底相除，指數相減：<br>${a}<sup>${m}</sup> ÷ ${a}<sup>${n}</sup> = ${a}<sup>${m}−${n}</sup> = ${a}<sup>${m-n}</sup> = <b>${Math.pow(a,m-n)}</b>`,
+        `Subtract the indices: ${a}<sup>${m-n}</sup> = <b>${Math.pow(a,m-n)}</b>.`, 0.01);
+    }
+  ],
+  2:[
+    ()=>{const a=R(2,3), m=R(2,3), n=R(2,3);
+      return mk(`計算 (${a}<sup>${m}</sup>)<sup>${n}</sup> 的值。`,`Evaluate (${a}<sup>${m}</sup>)<sup>${n}</sup>.`,
+        Math.pow(a,m*n),
+        `冪的冪，指數相乘：<br>(${a}<sup>${m}</sup>)<sup>${n}</sup> = ${a}<sup>${m}×${n}</sup> = ${a}<sup>${m*n}</sup> = <b>${Math.pow(a,m*n)}</b>`,
+        `(${a}<sup>${m}</sup>)<sup>${n}</sup> = ${a}<sup>${m*n}</sup> = <b>${Math.pow(a,m*n)}</b>.`, 0.01);
+    },
+    ()=>{const a=R(2,5), n=R(2,3);
+      return mk(`計算 ${a}<sup>−${n}</sup> 的值（以小數表示，取三位小數）。`,
+                `Evaluate ${a}<sup>−${n}</sup> (3 d.p.).`,
+                Math.round(1/Math.pow(a,n)*1000)/1000,
+        `負指數 = 倒數：<br>${a}<sup>−${n}</sup> = 1 / ${a}<sup>${n}</sup> = 1 / ${Math.pow(a,n)} = <b>${R2(1/Math.pow(a,n))}</b>`,
+        `${a}<sup>−${n}</sup> = 1/${Math.pow(a,n)} = <b>${R2(1/Math.pow(a,n))}</b>.`, 0.002);
+    }
+  ],
+  3:[
+    ()=>{const a=R(2,3), m=R(2,3), n=R(2,3);
+      return mk(`化簡 ${a}<sup>${m}</sup> × (${a}<sup>${n}</sup>)<sup>2</sup> ÷ ${a}<sup>${m+n}</sup>，求結果。`,
+                `Simplify ${a}<sup>${m}</sup> × (${a}<sup>${n}</sup>)<sup>2</sup> ÷ ${a}<sup>${m+n}</sup>.`,
+                Math.pow(a,m+2*n-m-n),
+        `先算冪的冪：(${a}<sup>${n}</sup>)<sup>2</sup> = ${a}<sup>${2*n}</sup><br>乘法：${a}<sup>${m}</sup> × ${a}<sup>${2*n}</sup> = ${a}<sup>${m+2*n}</sup><br>除法：${a}<sup>${m+2*n}</sup> ÷ ${a}<sup>${m+n}</sup> = ${a}<sup>${m+2*n-m-n}</sup> = ${a}<sup>${n}</sup> = <b>${Math.pow(a,n)}</b>`,
+        `(${a}<sup>${n}</sup>)² = ${a}<sup>${2*n}</sup>; product = ${a}<sup>${m+2*n}</sup>; divide → ${a}<sup>${n}</sup> = <b>${Math.pow(a,n)}</b>.`, 0.01);
+    }
+  ]
+};
+
+BANK['f2-2'] = {
+  1:[
+    ()=>{const a=R(1,6), b=R(1,6);
+      return mk(`展開 (x + ${a})(x + ${b})，求 x 項的係數。`,
+                `Expand (x + ${a})(x + ${b}). Find the coefficient of x.`,
+                a+b,
+        `(x + ${a})(x + ${b}) = x² + ${b}x + ${a}x + ${a*b}<br>= x² + ${a+b}x + ${a*b}<br>x 的係數 = <b>${a+b}</b>`,
+        `(x+${a})(x+${b}) = x² + ${a+b}x + ${a*b} → coefficient of x = <b>${a+b}</b>.`, 0.01);
+    },
+    ()=>{const a=R(1,6), b=R(1,6);
+      return mk(`展開 (x + ${a})(x + ${b})，求常數項。`,
+                `Expand (x + ${a})(x + ${b}). Find the constant term.`,
+                a*b, `(x + ${a})(x + ${b}) = x² + ${a+b}x + ${a*b}<br>常數項 = ${a} × ${b} = <b>${a*b}</b>`,
+        `Constant term = ${a} × ${b} = <b>${a*b}</b>.`, 0.01);
+    }
+  ],
+  2:[
+    ()=>{const v=R(2,5), a=R(1,5);
+      return mk(`當 x = ${v} 時，求 (x + ${a})² 的值。`,`If x = ${v}, evaluate (x + ${a})².`,
+        (v+a)*(v+a),
+        `先代入：(${v} + ${a})² = ${v+a}²<br>= <b>${(v+a)*(v+a)}</b><br>或展開：(x+${a})² = x² + ${2*a}x + ${a*a}，代入 x=${v} 得 ${v*v} + ${2*a*v} + ${a*a} = ${(v+a)*(v+a)}`,
+        `(${v}+${a})² = <b>${(v+a)*(v+a)}</b>.`, 0.01);
+    },
+    ()=>{const a=R(2,9);
+      return mk(`利用平方差公式計算 ${a+1} × ${a-1}。`,`Use the difference of squares to evaluate ${a+1} × ${a-1}.`,
+        (a+1)*(a-1),
+        `(${a}+1)(${a}−1) = ${a}² − 1²<br>= ${a*a} − 1 = <b>${(a+1)*(a-1)}</b>`,
+        `(${a}+1)(${a}−1) = ${a}² − 1 = <b>${(a+1)*(a-1)}</b>.`, 0.01);
+    }
+  ],
+  3:[
+    ()=>{const a=R(1,5), b=R(1,9);
+      return mk(`已知 x² + ${a+b}x + ${a*b} ≡ (x + p)(x + q)，求 p + q。`,
+                `Given x² + ${a+b}x + ${a*b} ≡ (x + p)(x + q), find p + q.`,
+                a+b,
+        `展開右邊：x² + (p + q)x + pq<br>比較係數：<br>p + q = ${a+b}（x 的係數）<br>pq = ${a*b}（常數項）<br>所以 p + q = <b>${a+b}</b>`,
+        `Comparing coefficients: p + q = <b>${a+b}</b>.`, 0.01);
+    },
+    ()=>{const k=R(2,9);
+      return mk(`若 (x + ${k})² ≡ x² + ax + b，求 a × b 的值。`,
+                `If (x + ${k})² ≡ x² + ax + b, find a × b.`,
+                (2*k)*(k*k),
+        `展開：(x + ${k})² = x² + ${2*k}x + ${k*k}<br>比較係數：a = ${2*k}，b = ${k*k}<br>a × b = ${2*k} × ${k*k} = <b>${(2*k)*(k*k)}</b>`,
+        `a = ${2*k}, b = ${k*k} → a × b = <b>${(2*k)*(k*k)}</b>.`, 0.5);
+    }
+  ]
+};
+
+BANK['f2-3'] = {
+  1:[
+    ()=>{const a=R(2,6), b=R(2,6);
+      return mk(`因式分解 ${a*b}x + ${a*b*a}（答案格式如 2(3x+4)），求括號內常數項。`,
+                `Factorise ${a*b}x + ${a*b*a}. Find the constant term inside the bracket.`,
+                a,
+        `提取公因式 ${a*b}：<br>${a*b}x + ${a*b*a} = ${a*b}(x + ${a})<br>括號內常數項 = <b>${a}</b>`,
+        `${a*b}(x + ${a}) → constant term = <b>${a}</b>.`, 0.01);
+    },
+    ()=>{const p=R(1,5), q=R(1,5);
+      return mk(`因式分解 x² + ${p+q}x + ${p*q}，求兩因式中較大的常數。`,
+                `Factorise x² + ${p+q}x + ${p*q}. Find the larger constant in the factors.`,
+                Math.max(p,q),
+        `找兩數：乘積 = ${p*q}，和 = ${p+q}<br>即 ${p} 和 ${q}<br>x² + ${p+q}x + ${p*q} = (x + ${p})(x + ${q})<br>較大的常數 = <b>${Math.max(p,q)}</b>`,
+        `(x+${p})(x+${q}) → larger constant = <b>${Math.max(p,q)}</b>.`, 0.01);
+    }
+  ],
+  2:[
+    ()=>{const p=R(1,6), q=R(1,6);
+      return mk(`因式分解 x² − ${p+q}x + ${p*q}，求 p × q（即常數項）。`,
+                `Factorise x² − ${p+q}x + ${p*q}. Find p × q (the constant term).`,
+                p*q,
+        `需要兩數：和 = −${p+q}，積 = ${p*q}<br>即 −${p} 和 −${q}<br>x² − ${p+q}x + ${p*q} = (x − ${p})(x − ${q})<br>常數項 = <b>${p*q}</b>`,
+        `(x−${p})(x−${q}) → constant = <b>${p*q}</b>.`, 0.01);
+    },
+    ()=>{const a=R(2,6);
+      return mk(`因式分解 x² − ${a*a}，求較大的因式中的常數項。`,
+                `Factorise x² − ${a*a}. Find the larger constant in the factors.`,
+                a, `平方差：a² − b² = (a + b)(a − b)<br>x² − ${a*a} = x² − ${a}² = (x + ${a})(x − ${a})<br>較大的常數 = <b>${a}</b>`,
+        `x² − ${a}² = (x+${a})(x−${a}) → larger constant = <b>${a}</b>.`, 0.01);
+    }
+  ],
+  3:[
+    ()=>{const a=R(2,4), b=R(1,5);
+      return mk(`因式分解 ${a*a}x² − ${b*b}，求兩個因式常數項的乘積。`,
+                `Factorise ${a*a}x² − ${b*b}. Find the product of the constants in the two factors.`,
+                -(b*b),
+        `平方差：${a*a}x² − ${b*b} = (${a}x)² − ${b}²<br>= (${a}x + ${b})(${a}x − ${b})<br>常數項乘積 = ${b} × (−${b}) = <b>${-(b*b)}</b>`,
+        `(${a}x+${b})(${a}x−${b}) → product of constants = <b>${-(b*b)}</b>.`, 0.01);
+    },
+    ()=>{const a=R(2,4);
+      return mk(`因式分解 2x² − ${2*a*a} 時，先提取公因式 2，得 2(x² − ${a*a})，再分解。求最終兩個因式的常數項之和。`,
+                `Factorise 2x² − ${2*a*a}: take out 2 → 2(x² − ${a*a}). Find the sum of the constants in the final two factors.`,
+                0,
+        `2x² − ${2*a*a} = 2(x² − ${a*a})<br>= 2(x + ${a})(x − ${a})<br>兩個因式的常數項為 ${a} 和 −${a}，和 = <b>0</b>`,
+        `2(x+${a})(x−${a}) → sum of constants = ${a} + (−${a}) = <b>0</b>.`, 0.01);
+    }
+  ]
+};
+
+BANK['f2-4'] = {
+  1:[
+    ()=>{const a=R(2,5), b=R(1,10), c=R(5,30), lim=(c+b)/a;
+      return mk(`解不等式 ${a}x − ${b} &lt; ${c}，求最大整數解。`,
+                `Solve ${a}x − ${b} &lt; ${c}. Find the greatest integer solution.`,
+                Math.ceil(lim)-1,
+        `${a}x &lt; ${c} + ${b} = ${c+b}<br>x &lt; ${c+b} ÷ ${a} = ${R2(lim)}<br>最大整數解 = <b>${Math.ceil(lim)-1}</b>`,
+        `x &lt; ${R2(lim)} → greatest integer = <b>${Math.ceil(lim)-1}</b>.`, 0.01);
+    },
+    ()=>{const a=R(2,6), b=R(2,10), c=R(10,40);
+      return mk(`解不等式 ${a}x + ${b} ≤ ${c}，求最大整數解。`,
+                `Solve ${a}x + ${b} ≤ ${c}. Find the greatest integer solution.`,
+                Math.floor((c-b)/a),
+        `${a}x ≤ ${c} − ${b} = ${c-b}<br>x ≤ ${R2((c-b)/a)}<br>最大整數解 = <b>${Math.floor((c-b)/a)}</b>`,
+        `x ≤ ${R2((c-b)/a)} → greatest integer = <b>${Math.floor((c-b)/a)}</b>.`, 0.01);
+    }
+  ],
+  2:[
+    ()=>{const a=R(2,5), c=R(4,20);
+      return mk(`解不等式 −${a}x ≥ ${a*c}，求最大整數解。`,
+                `Solve −${a}x ≥ ${a*c}. Find the greatest integer solution.`,
+                -c,
+        `兩邊同除以 −${a}，<b>不等號要反向</b>：<br>x ≤ ${a*c} ÷ (−${a})<br>x ≤ <b>−${c}</b><br>最大整數解 = −${c}`,
+        `Divide by −${a} and flip: x ≤ <b>−${c}</b>.`, 0.01);
+    },
+    ()=>{const a=R(2,4), b=R(2,8), c=R(10,30);
+      return mk(`解不等式 ${a}(x − ${b}) ≤ ${c}，求最大整數解。`,
+                `Solve ${a}(x − ${b}) ≤ ${c}. Find the greatest integer solution.`,
+                Math.floor(c/a + b),
+        `展開：${a}x − ${a*b} ≤ ${c}<br>${a}x ≤ ${c+a*b}<br>x ≤ ${R2((c+a*b)/a)}<br>最大整數解 = <b>${Math.floor(c/a+b)}</b>`,
+        `x ≤ ${R2((c+a*b)/a)} → greatest integer = <b>${Math.floor(c/a+b)}</b>.`, 0.01);
+    }
+  ],
+  3:[
+    ()=>{const a=R(3,6), b=R(2,6), c=R(1,5), d=R(5,20);
+      return mk(`求不等式 ${a}x + ${b} &gt; ${c}x − ${d} 的最小整數解。`,
+                `Find the smallest integer solution of ${a}x + ${b} &gt; ${c}x − ${d}.`,
+                Math.floor((-(b+d))/(a-c) * -1) + 1,
+        `移項：${a}x − ${c}x &gt; −${d} − ${b}<br>${a-c}x &gt; ${-(b+d)}<br>x &gt; ${R2(-(b+d)/(a-c))}<br>最小整數解 = <b>${Math.floor((-(b+d))/(a-c))+1}</b>`,
+        `x &gt; ${R2(-(b+d)/(a-c))} → smallest integer = <b>${Math.floor((-(b+d))/(a-c))+1}</b>.`, 0.01);
+    }
+  ]
+};
+
+BANK['f2-5'] = {
+  1:[
+    ()=>{const tp=P([[3,4,5],[6,8,10],[5,12,13],[8,15,17],[9,12,15]]);
+      return mk(`直角三角形的兩條直角邊分別為 ${tp[0]} cm 和 ${tp[1]} cm，求斜邊（cm）。`,
+                `A right triangle has legs ${tp[0]} cm and ${tp[1]} cm. Find the hypotenuse (cm).`,
+                tp[2],
+        `畢氏定理：c² = a² + b²<br>c² = ${tp[0]}² + ${tp[1]}² = ${tp[0]*tp[0]} + ${tp[1]*tp[1]} = ${tp[0]*tp[0]+tp[1]*tp[1]}<br>c = √${tp[0]*tp[0]+tp[1]*tp[1]} = <b>${tp[2]} cm</b>`,
+        `c² = ${tp[0]*tp[0]} + ${tp[1]*tp[1]} = ${tp[0]*tp[0]+tp[1]*tp[1]} → c = <b>${tp[2]}</b>.`, 0.01);
+    }
+  ],
+  2:[
+    ()=>{const tp=P([[3,4,5],[6,8,10],[5,12,13],[8,15,17],[9,12,15],[7,24,25]]);
+      return mk(`直角三角形的斜邊為 ${tp[2]} cm，一條直角邊為 ${tp[0]} cm，求另一條直角邊（cm）。`,
+                `A right triangle has hypotenuse ${tp[2]} cm and one leg ${tp[0]} cm. Find the other leg (cm).`,
+                tp[1],
+        `b² = c² − a²<br>b² = ${tp[2]}² − ${tp[0]}² = ${tp[2]*tp[2]} − ${tp[0]*tp[0]} = ${tp[2]*tp[2]-tp[0]*tp[0]}<br>b = √${tp[2]*tp[2]-tp[0]*tp[0]} = <b>${tp[1]} cm</b>`,
+        `b² = ${tp[2]*tp[2]} − ${tp[0]*tp[0]} = ${tp[2]*tp[2]-tp[0]*tp[0]} → b = <b>${tp[1]}</b>.`, 0.01);
+    }
+  ],
+  3:[
+    ()=>{const tp=P([[3,4,5],[6,8,10],[5,12,13],[8,15,17]]);
+      const tri=[tp[0],tp[1],tp[2]].sort((a,b)=>a-b);
+      return mk(`三邊長為 ${tri.join('、')} cm 的三角形，面積是多少 cm²？`,
+                `A triangle has sides ${tri.join(', ')} cm. Find its area (cm²).`,
+                tri[0]*tri[1]/2,
+        `先驗證是否直角三角形：${tri[0]}² + ${tri[1]}² = ${tri[0]*tri[0]+tri[1]*tri[1]} = ${tri[2]}² ✅<br>所以兩條直角邊為 ${tri[0]} 和 ${tri[1]}。<br>面積 = ${tri[0]} × ${tri[1]} ÷ 2 = <b>${tri[0]*tri[1]/2} cm²</b>`,
+        `Right-angled (${tri[0]}²+${tri[1]}²=${tri[2]}²). Area = <b>${tri[0]*tri[1]/2} cm²</b>.`, 0.1);
+    },
+    ()=>{const a=R(3,9), b=R(4,12), c=a+b-1;
+      return mk(`三邊長為 ${a}、${b}、${c} 的三角形，是否為直角三角形？（是 = 1，否 = 0）`,
+                `Is a triangle with sides ${a}, ${b}, ${c} right-angled? (yes = 1, no = 0)`,
+                (a*a+b*b===c*c)?1:0,
+        `最長邊 = ${c}<br>${a}² + ${b}² = ${a*a} + ${b*b} = ${a*a+b*b}<br>${c}² = ${c*c}<br>${a*a+b*b===c*c?'兩者相等 → <b>是直角三角形</b>':'兩者不等 → <b>不是直角三角形</b>'}`,
+        `${a}²+${b}² = ${a*a+b*b} vs ${c}² = ${c*c} → <b>${a*a+b*b===c*c?'yes':'no'}</b>.`, 0.01);
+    }
+  ]
+};
+
+BANK['f2-6'] = {
+  1:[
+    ()=>{const n=R(5,12);
+      return mk(`求 ${n} 邊形的內角和（度）。`,`Find the interior angle sum of a ${n}-gon (degrees).`,
+        (n-2)*180, `(n − 2) × 180° = (${n} − 2) × 180° = <b>${(n-2)*180}°</b>`,
+        `(${n}−2)×180° = <b>${(n-2)*180}°</b>.`, 0.5);
+    }
+  ],
+  2:[
+    ()=>{const a=R(50,130);
+      return mk(`平行四邊形 ABCD 中，∠A = ${a}°。求 ∠B（度）。`,
+                `In parallelogram ABCD, ∠A = ${a}°. Find ∠B (degrees).`,
+                180-a,
+        `平行四邊形<b>鄰角互補</b>：<br>∠A + ∠B = 180°<br>∠B = 180° − ${a}° = <b>${180-a}°</b>`,
+        `Adjacent angles are supplementary: 180° − ${a}° = <b>${180-a}°</b>.`, 0.1);
+    },
+    ()=>{const a=R(50,130);
+      return mk(`平行四邊形 ABCD 中，∠A = ${a}°。求 ∠C（度）。`,
+                `In parallelogram ABCD, ∠A = ${a}°. Find ∠C (degrees).`,
+                a, `平行四邊形<b>對角相等</b>，所以 ∠C = ∠A = <b>${a}°</b>。`,
+        `Opposite angles are equal → <b>${a}°</b>.`, 0.1);
+    }
+  ],
+  3:[
+    ()=>{const n=R(3,12);
+      return mk(`正 ${n} 邊形的每個外角是多少度？（取一位小數）`,
+                `Find each exterior angle of a regular ${n}-gon (1 d.p.).`,
+                R2(360/n), `正多邊形外角和 = 360°<br>每個外角 = 360° ÷ ${n} = <b>${R2(360/n)}°</b>`,
+        `360° ÷ ${n} = <b>${R2(360/n)}°</b>.`, 0.05);
+    },
+    ()=>{const n=R(5,12);
+      return mk(`一個正多邊形每個外角為 ${R2(360/n)}°，求它的邊數。`,
+                `A regular polygon has each exterior angle ${R2(360/n)}°. Find the number of sides.`,
+                n, `外角和 = 360°<br>邊數 = 360° ÷ 每個外角 = 360 ÷ ${R2(360/n)} = <b>${n}</b>`,
+        `360 ÷ ${R2(360/n)} = <b>${n}</b>.`, 0.1);
+    }
+  ]
+};
+
+BANK['f2-7'] = {
+  1:[
+    ()=>{const l=R(3,12), w=R(3,12), h=R(3,12);
+      return mk(`長方體長 ${l} cm、闊 ${w} cm、高 ${h} cm，求體積（cm³）。`,
+                `A cuboid is ${l}×${w}×${h} cm. Find its volume (cm³).`,
+                l*w*h, `長方體體積 = 長 × 闊 × 高 = ${l} × ${w} × ${h} = <b>${l*w*h} cm³</b>`,
+        `${l}×${w}×${h} = <b>${l*w*h} cm³</b>.`, 0.01);
+    }
+  ],
+  2:[
+    ()=>{const r=R(2,7), h=R(3,12);
+      return mk(`圓柱半徑 ${r} cm、高 ${h} cm，求體積（cm³，π = 3.14，一位小數）。`,
+                `A cylinder has radius ${r} cm and height ${h} cm. Find its volume (π = 3.14, 1 d.p.).`,
+                R2(3.14*r*r*h),
+        `圓柱體積 = πr²h<br>= 3.14 × ${r}² × ${h} = 3.14 × ${r*r} × ${h} = <b>${R2(3.14*r*r*h)} cm³</b>`,
+        `πr²h = 3.14 × ${r*r} × ${h} = <b>${R2(3.14*r*r*h)} cm³</b>.`, 0.2);
+    }
+  ],
+  3:[
+    ()=>{const b=R(4,10)*2, h=R(3,10), H=R(5,15);
+      return mk(`三角柱的底面是底 ${b} cm、高 ${h} cm 的三角形，柱高 ${H} cm。求體積（cm³）。`,
+                `A triangular prism has base triangle ${b} cm by ${h} cm and length ${H} cm. Find its volume (cm³).`,
+                b*h/2*H,
+        `底面積 = ${b} × ${h} ÷ 2 = ${b*h/2} cm²<br>體積 = 底面積 × 柱高 = ${b*h/2} × ${H} = <b>${b*h/2*H} cm³</b>`,
+        `Base area ${b*h/2} × ${H} = <b>${b*h/2*H} cm³</b>.`, 0.1);
+    },
+    ()=>{const l=R(4,10), w=R(3,8), h=R(2,6);
+      return mk(`長方體長 ${l} cm、闊 ${w} cm、高 ${h} cm，求表面積（cm²）。`,
+                `A cuboid is ${l}×${w}×${h} cm. Find its total surface area (cm²).`,
+                2*(l*w+l*h+w*h),
+        `表面積 = 2(lw + lh + wh)<br>= 2(${l}×${w} + ${l}×${h} + ${w}×${h})<br>= 2(${l*w} + ${l*h} + ${w*h})<br>= 2 × ${l*w+l*h+w*h} = <b>${2*(l*w+l*h+w*h)} cm²</b>`,
+        `2(lw+lh+wh) = <b>${2*(l*w+l*h+w*h)} cm²</b>.`, 0.1);
+    }
+  ]
+};
+
+BANK['f2-8'] = {
+  1:[
+    ()=>{const red=R(1,6), blue=R(1,6), t=red+blue;
+      return mk(`袋中有 ${red} 個紅球和 ${blue} 個藍球，隨機抽一個，求抽到紅球的概率（小數，三位小數）。`,
+                `A bag has ${red} red and ${blue} blue balls. Find P(red) (3 d.p.).`,
+                Math.round(red/t*1000)/1000,
+        `P(紅) = 紅球數 ÷ 總數<br>= ${red} ÷ (${red} + ${blue}) = ${red}/${t} ≈ <b>${Math.round(red/t*1000)/1000}</b>`,
+        `${red} ÷ ${t} ≈ <b>${Math.round(red/t*1000)/1000}</b>.`, 0.002);
+    }
+  ],
+  2:[
+    ()=>{const p=R(2,8)*5;
+      return mk(`某事件發生的概率是 ${p/100}，求它<b>不發生</b>的概率（小數）。`,
+                `P(A) = ${p/100}. Find P(not A) (decimal).`,
+                R2(1-p/100),
+        `P(不發生) = 1 − P(發生)<br>= 1 − ${p/100} = <b>${R2(1-p/100)}</b>`,
+        `1 − ${p/100} = <b>${R2(1-p/100)}</b>.`, 0.005);
+    },
+    ()=>{const a=R(1,4), b=R(2,6), t=a+b;
+      return mk(`袋中有 ${a} 個紅球、${b} 個白球。隨機抽一個，求抽到白球的概率（分數或小數均可）。`,
+                `A bag has ${a} red and ${b} white balls. Find P(white).`,
+                R2(b/t), `P(白) = 白球數 ÷ 總數 = ${b} ÷ ${t} ≈ <b>${R2(b/t)}</b>`,
+        `${b} ÷ ${t} ≈ <b>${R2(b/t)}</b>.`, 0.005);
+    }
+  ],
+  3:[
+    ()=>{const r=R(1,3), b=R(2,5);
+      return mk(`袋中有 ${r} 個紅球、${b} 個藍球，共 ${r+b} 個。有放回地抽兩次，兩次都是紅球的概率（三位小數）。`,
+                `A bag has ${r} red and ${b} blue balls. Two draws <b>with</b> replacement. Find P(both red) (3 d.p.).`,
+                Math.round((r/(r+b))**2*1000)/1000,
+        `每次抽到紅球的概率都是 ${r}/${r+b}<br>兩次獨立：(${r}/${r+b}) × (${r}/${r+b}) = ${R2(r/(r+b))}² ≈ <b>${Math.round((r/(r+b))**2*1000)/1000}</b>`,
+        `(${r}/${r+b})² ≈ <b>${Math.round((r/(r+b))**2*1000)/1000}</b>.`, 0.003);
+    },
+    ()=>{const r=R(2,4), b=R(2,4);
+      return mk(`袋中有 ${r} 個紅球、${b} 個藍球。<b>不放回</b>地抽兩次，兩次都是紅球的概率（三位小數）。`,
+                `A bag has ${r} red and ${b} blue balls. Two draws <b>without</b> replacement. Find P(both red) (3 d.p.).`,
+                Math.round((r/(r+b))*((r-1)/(r+b-1))*1000)/1000,
+        `第一次 P(紅) = ${r}/${r+b}<br>抽出後不放回，剩 ${r+b-1} 個，其中紅球 ${r-1} 個<br>第二次 P(紅) = ${r-1}/${r+b-1}<br>相乘 = ${r}/${r+b} × ${r-1}/${r+b-1} ≈ <b>${Math.round((r/(r+b))*((r-1)/(r+b-1))*1000)/1000}</b>`,
+        `${r}/${r+b} × ${r-1}/${r+b-1} ≈ <b>${Math.round((r/(r+b))*((r-1)/(r+b-1))*1000)/1000}</b>.`, 0.003);
+    }
+  ]
+};
+
+/* ============ F3 ============ */
+BANK['f3-1'] = {
+  1:[
+    ()=>{const p=R(1,6), q=R(1,6);
+      return mk(`解方程 x² − ${p+q}x + ${p*q} = 0，求較大的根。`,
+                `Solve x² − ${p+q}x + ${p*q} = 0. Find the larger root.`,
+                Math.max(p,q),
+        `因式分解：找兩數，積 = ${p*q}，和 = ${p+q} → ${p} 和 ${q}<br>x² − ${p+q}x + ${p*q} = (x − ${p})(x − ${q}) = 0<br>x = ${p} 或 x = ${q}<br>較大的根 = <b>${Math.max(p,q)}</b>`,
+        `(x−${p})(x−${q}) = 0 → larger root <b>${Math.max(p,q)}</b>.`, 0.01);
+    }
+  ],
+  2:[
+    ()=>{const a=1, b=R(2,8), c=-(R(1,8));
+      const D = b*b-4*a*c, s=Math.sqrt(D);
+      return mk(`用公式法解 x² + ${b}x − ${-c} = 0，求<b>正根</b>（取兩位小數）。`,
+                `Solve x² + ${b}x − ${-c} = 0 with the quadratic formula. Find the <b>positive</b> root (2 d.p.).`,
+                R2((-b+s)/2),
+        `a = 1, b = ${b}, c = ${c}<br>Δ = b² − 4ac = ${b*b} − 4(1)(${c}) = ${b*b} + ${-4*c} = ${D}<br>x = [−${b} ± √${D}] ÷ 2<br>正根 = (−${b} + ${R2(s)}) ÷ 2 ≈ <b>${R2((-b+s)/2)}</b>`,
+        `Δ = ${D}; x = (−${b} + √${D})/2 ≈ <b>${R2((-b+s)/2)}</b>.`, 0.02);
+    }
+  ],
+  3:[
+    ()=>{const a=R(1,3), b=R(2,8), c=R(1,6);
+      const D = b*b-4*a*c;
+      const type = D>0?'兩':(D===0?'一':'零');
+      return mk(`判斷方程 ${a}x² + ${b}x + ${c} = 0 有多少個實根？（輸入數字 0 / 1 / 2）`,
+                `How many real roots does ${a}x² + ${b}x + ${c} = 0 have? (0 / 1 / 2)`,
+                D>0?2:(D===0?1:0),
+        `判別式 Δ = b² − 4ac<br>= ${b}² − 4(${a})(${c})<br>= ${b*b} − ${4*a*c} = ${D}<br>${D>0?'Δ &gt; 0 → <b>兩個相異實根</b>':(D===0?'Δ = 0 → <b>一個重根</b>':'Δ &lt; 0 → <b>沒有實根</b>')}`,
+        `Δ = ${D} → <b>${D>0?2:(D===0?1:0)}</b> real root(s).`, 0.01);
+    },
+    ()=>{const p=R(1,5), q=R(2,6);
+      return mk(`x² − ${p+q}x + ${p*q} = 0 的兩根之積是多少？`,
+                `Find the product of the roots of x² − ${p+q}x + ${p*q} = 0.`,
+                p*q,
+        `韋達定理：兩根之積 = c/a<br>a = 1, b = −${p+q}, c = ${p*q}<br>積 = ${p*q} ÷ 1 = <b>${p*q}</b><br>（驗證：兩根為 ${p} 和 ${q}，${p}×${q} = ${p*q}）`,
+        `Product = c/a = <b>${p*q}</b>.`, 0.01);
+    }
+  ]
+};
+
+BANK['f3-2'] = {
+  1:[
+    ()=>{const a=pick([1,2,3,-1,-2]), h=R(-5,5), k=R(-9,9);
+      return mk(`二次函數 y = ${a}(x ${h<0?'+':'−'} ${Math.abs(h)})² ${k<0?'−':'+'} ${Math.abs(k)}，求頂點的橫坐標。`,
+                `For y = ${a}(x ${h<0?'+':'−'} ${Math.abs(h)})² ${k<0?'−':'+'} ${Math.abs(k)}, find the x-coordinate of the vertex.`,
+                h,
+        `頂點式 y = a(x − h)² + k，頂點為 (h, k)<br>本題可寫成 y = ${a}(x − (${h}))² + ${k}<br>所以 h = <b>${h}</b>`,
+        `In y = a(x−h)²+k, h = <b>${h}</b>.`, 0.01);
+    }
+  ],
+  2:[
+    ()=>{const a=pick([1,2,-1,-2]), h=R(-4,4), k=R(-8,8);
+      return mk(`二次函數 y = ${a}(x ${h<0?'+':'−'} ${Math.abs(h)})² ${k<0?'−':'+'} ${Math.abs(k)}，求對稱軸 x 的值。`,
+                `For y = ${a}(x ${h<0?'+':'−'} ${Math.abs(h)})² ${k<0?'−':'+'} ${Math.abs(k)}, find the axis of symmetry x.`,
+                h, `頂點式 y = a(x − h)² + k 的對稱軸為 x = h<br>所以對稱軸 x = <b>${h}</b>`,
+        `Axis of symmetry: x = <b>${h}</b>.`, 0.01);
+    },
+    ()=>{const a=R(1,3), b=R(2,10);
+      return mk(`二次函數 y = x² − ${b}x + ${R(1,9)}，求對稱軸 x 的值（取一位小數）。`,
+                `For y = x² − ${b}x + c, find the axis of symmetry x (1 d.p.).`,
+                R2(b/2),
+        `對稱軸 x = −b / (2a)<br>a = 1, b = −${b}<br>x = ${b} / (2 × 1) = <b>${R2(b/2)}</b>`,
+        `x = −b/(2a) = ${b}/2 = <b>${R2(b/2)}</b>.`, 0.02);
+    }
+  ],
+  3:[
+    ()=>{const a=pick([1,2,3]), h=R(-4,4), k=R(-9,9);
+      const max = a>0 ? '極小' : '極大';
+      return mk(`二次函數 y = ${a}(x ${h<0?'+':'−'} ${Math.abs(h)})² ${k<0?'−':'+'} ${Math.abs(k)}，求它的極值。`,
+                `Find the extremum of y = ${a}(x ${h<0?'+':'−'} ${Math.abs(h)})² ${k<0?'−':'+'} ${Math.abs(k)}.`,
+                k,
+        `頂點為 (${h}, ${k})。<br>a = ${a} ${a>0?'&gt; 0 → 開口向上，有極小值':'&lt; 0 → 開口向下，有極大值'}<br>${max}值 = <b>${k}</b>`,
+        `Vertex (${h},${k}); a = ${a} → ${a>0?'minimum':'maximum'} <b>${k}</b>.`, 0.01);
+    },
+    ()=>{const p=R(1,5), q=R(2,6);
+      const h=(p+q)/2, k=-(p+q)*(p+q)/4 + (p+q)*h/1 - p*q;
+      const kk = -((q-p)*(q-p))/4;
+      return mk(`二次函數 y = (x − ${p})(x − ${q})，求它的極小值（取一位小數）。`,
+                `For y = (x − ${p})(x − ${q}), find the minimum value (1 d.p.).`,
+                R2(kk),
+        `展開：y = x² − ${p+q}x + ${p*q}<br>對稱軸 x = ${p+q} ÷ 2 = ${h}<br>代回求 y：<br>y = (${h} − ${p})(${h} − ${q}) = (${R2(h-p)})(${R2(h-q)}) = <b>${R2(kk)}</b>`,
+        `Axis x = ${h}; minimum = <b>${R2(kk)}</b>.`, 0.02);
+    }
+  ]
+};
+
+BANK['f3-3'] = {
+  1:[
+    ()=>{const x1=pick([2,3,4,5]), y1=pick([2,3,4,5]);
+      return mk(`y 與 x 成反比，且 x = ${x1} 時 y = ${y1}。求比例常數 k。`,
+                `y ∝ 1/x and y = ${y1} when x = ${x1}. Find k.`,
+                x1*y1, `反比例：y = k/x，即 k = xy<br>k = ${x1} × ${y1} = <b>${x1*y1}</b>`,
+        `k = xy = ${x1} × ${y1} = <b>${x1*y1}</b>.`, 0.01);
+    }
+  ],
+  2:[
+    ()=>{const x1=pick([2,3,4,5]), y1=pick([2,3,4,6]), x2=pick([2,3,4,5,6,10]);
+      const k=x1*y1;
+      return mk(`y 與 x 成反比，x = ${x1} 時 y = ${y1}。求 x = ${x2} 時 y 的值（取一位小數）。`,
+                `y ∝ 1/x, y = ${y1} when x = ${x1}. Find y when x = ${x2} (1 d.p.).`,
+                R2(k/x2),
+        `k = ${x1} × ${y1} = ${k}<br>所以 y = ${k}/x<br>當 x = ${x2}：y = ${k} ÷ ${x2} ≈ <b>${R2(k/x2)}</b>`,
+        `k = ${k}; y = ${k}/${x2} ≈ <b>${R2(k/x2)}</b>.`, 0.02);
+    }
+  ],
+  3:[
+    ()=>{const v=R(4,15)*10, s=R(2,6);
+      const t=v/s;
+      return mk(`路程固定為 ${v} km。速度為 ${s*10} km/h 時需 ${R2(v/(s*10))} 小時。求速度為 ${s*20} km/h 時所需的時間（小時）。`,
+                `A fixed ${v} km journey. At ${s*10} km/h it takes ${R2(v/(s*10))} h. Find the time at ${s*20} km/h (h).`,
+                R2(v/(s*20)),
+        `速度 × 時間 = 路程（常數）<br>k = ${s*10} × ${R2(v/(s*10))} = ${v}<br>t = ${v} ÷ ${s*20} ≈ <b>${R2(v/(s*20))} 小時</b>`,
+        `k = ${v}; t = ${v}/${s*20} ≈ <b>${R2(v/(s*20))} h</b>.`, 0.02);
+    },
+    ()=>{const w1=R(3,8), d1=R(4,15), w2=R(2,10);
+      return mk(`${w1} 個人完成某工程需 ${d1} 天。若人數改為 ${w2} 人，需多少天？（取一位小數）`,
+                `${w1} workers take ${d1} days. With ${w2} workers, how many days? (1 d.p.)`,
+                R2(w1*d1/w2),
+        `人數與天數成<b>反比</b>：人數 × 天數 = 常數<br>k = ${w1} × ${d1} = ${w1*d1}<br>t = ${w1*d1} ÷ ${w2} ≈ <b>${R2(w1*d1/w2)} 天</b>`,
+        `k = ${w1*d1}; t = ${w1*d1}/${w2} ≈ <b>${R2(w1*d1/w2)}</b>.`, 0.02);
+    }
+  ]
+};
+
+BANK['f3-4'] = {
+  1:[
+    ()=>{const x1=R(-5,5), y1=R(-5,5), x2=x1+R(1,5), y2=R(-6,6);
+      return mk(`求經過點 (${x1}, ${y1}) 和 (${x2}, ${y2}) 的直線斜率（取一位小數）。`,
+                `Find the slope through (${x1}, ${y1}) and (${x2}, ${y2}) (1 d.p.).`,
+                R2((y2-y1)/(x2-x1)),
+        `m = (y₂ − y₁) ÷ (x₂ − x₁)<br>= (${y2} − ${y1}) ÷ (${x2} − ${x1})<br>= ${y2-y1} ÷ ${x2-x1} ≈ <b>${R2((y2-y1)/(x2-x1))}</b>`,
+        `m = ${y2-y1}/${x2-x1} ≈ <b>${R2((y2-y1)/(x2-x1))}</b>.`, 0.02);
+    }
+  ],
+  2:[
+    ()=>{const tp=P([[3,4,5],[6,8,10],[5,12,13]]), x1=R(-4,4), y1=R(-4,4);
+      return mk(`求點 (${x1}, ${y1}) 與 (${x1+tp[0]}, ${y1+tp[1]}) 之間的距離。`,
+                `Find the distance between (${x1}, ${y1}) and (${x1+tp[0]}, ${y1+tp[1]}).`,
+                tp[2],
+        `d = √[(x₂−x₁)² + (y₂−y₁)²]<br>= √[${tp[0]}² + ${tp[1]}²]<br>= √[${tp[0]*tp[0]} + ${tp[1]*tp[1]}]<br>= √${tp[0]*tp[0]+tp[1]*tp[1]} = <b>${tp[2]}</b>`,
+        `√(${tp[0]*tp[0]}+${tp[1]*tp[1]}) = <b>${tp[2]}</b>.`, 0.01);
+    }
+  ],
+  3:[
+    ()=>{const x1=R(-6,6), y1=R(-6,6), x2=R(-6,6), y2=R(-6,6);
+      return mk(`求點 (${x1}, ${y1}) 與 (${x2}, ${y2}) 的中點 x 坐標（取一位小數）。`,
+                `Find the x-coordinate of the midpoint of (${x1}, ${y1}) and (${x2}, ${y2}) (1 d.p.).`,
+                R2((x1+x2)/2),
+        `中點 x = (x₁ + x₂) ÷ 2<br>= (${x1} + ${x2}) ÷ 2 = <b>${R2((x1+x2)/2)}</b>`,
+        `(${x1}+${x2})/2 = <b>${R2((x1+x2)/2)}</b>.`, 0.02);
+    },
+    ()=>{const x1=R(-4,4), y1=R(-4,4);
+      return mk(`寫出經過 (${x1}, ${y1}) 且斜率為 3 的直線方程（形式 y = 3x + c），求 c。`,
+                `A line through (${x1}, ${y1}) has slope 3. In y = 3x + c, find c.`,
+                y1-3*x1,
+        `用點斜式：y − y₁ = m(x − x₁)<br>y − ${y1} = 3(x − ${x1})<br>y = 3x − ${3*x1} + ${y1}<br>所以 c = <b>${y1-3*x1}</b>`,
+        `y = 3x − ${3*x1} + ${y1} → c = <b>${y1-3*x1}</b>.`, 0.01);
+    }
+  ]
+};
+
+BANK['f3-5'] = {
+  1:[
+    ()=>{const a=R(2,4), b=R(5,9), s=R(2,4);
+      const k=a/b;
+      return mk(`△ABC ~ △DEF，AB = ${a} cm，DE = ${b} cm，BC = ${a*s} cm。求 EF（cm，取一位小數）。`,
+                `△ABC ~ △DEF, AB = ${a} cm, DE = ${b} cm, BC = ${a*s} cm. Find EF (1 d.p.).`,
+                R2(b*s),
+        `相似比 = AB/DE = ${a}/${b}<br>BC/EF = ${a}/${b}<br>${a*s}/EF = ${a}/${b}<br>EF = ${a*s} × ${b} ÷ ${a} ≈ <b>${R2(b*s)} cm</b>`,
+        `${a*s} × ${b}/${a} = <b>${R2(b*s)}</b>.`, 0.05);
+    }
+  ],
+  2:[
+    ()=>{const a=R(1,3), b=a+R(1,3);
+      return mk(`兩個相似三角形的對應邊比為 ${a} : ${b}，求面積比（以「x:y」格式表示，如 4:9）。`,
+                `Two similar triangles have side ratio ${a} : ${b}. Find the ratio of their areas (format x:y).`,
+                (a*a)+':'+(b*b),
+        `面積比 = （邊長比）²<br>= ${a}² : ${b}² = <b>${a*a} : ${b*b}</b>`,
+        `Area ratio = ${a}² : ${b}² = <b>${a*a}:${b*b}</b>.`, null);
+    },
+    ()=>{const s=R(2,6);
+      return mk(`兩個相似三角形的面積比為 ${s*s} : ${(s+1)*(s+1)}，求它們的邊長比（格式 x:y）。`,
+                `Two similar triangles have area ratio ${s*s} : ${(s+1)*(s+1)}. Find their side ratio (format x:y).`,
+                s+':'+(s+1),
+        `面積比 = (邊長比)²<br>邊長比 = √${s*s} : √${(s+1)*(s+1)} = <b>${s} : ${s+1}</b>`,
+        `Side ratio = <b>${s}:${s+1}</b>.`, null);
+    }
+  ],
+  3:[
+    ()=>{const h=R(12,20)/10, sh=R(15,30)/10, ph=R(80,150)/10;
+      return mk(`小明身高 ${h} m，影子長 ${sh} m。同一時刻旗杆影子長 ${ph} m，求旗杆高度（m，取一位小數）。`,
+                `A boy ${h} m tall casts a ${sh} m shadow. A flagpole casts a ${ph} m shadow at the same time. Find the flagpole height (1 d.p.).`,
+                R2(h*ph/sh),
+        `兩個三角形相似（同一時刻太陽光線平行）：<br>身高 / 人影 = 杆高 / 杆影<br>${h} / ${sh} = H / ${ph}<br>H = ${h} × ${ph} ÷ ${sh} ≈ <b>${R2(h*ph/sh)} m</b>`,
+        `${h} × ${ph}/${sh} ≈ <b>${R2(h*ph/sh)} m</b>.`, 0.02);
+    }
+  ]
+};
+
+BANK['f3-6'] = {
+  1:[
+    ()=>{const tp=P([[3,4,5],[6,8,10],[5,12,13],[8,15,17]]);
+      return mk(`直角三角形中，角 θ 的對邊為 ${tp[0]}，鄰邊為 ${tp[1]}。求 tan θ（三位小數）。`,
+                `Opposite ${tp[0]}, adjacent ${tp[1]}. Find tan θ (3 d.p.).`,
+                Math.round(tp[0]/tp[1]*1000)/1000,
+        `tan θ = 對邊 ÷ 鄰邊<br>= ${tp[0]} ÷ ${tp[1]} ≈ <b>${Math.round(tp[0]/tp[1]*1000)/1000}</b>`,
+        `${tp[0]}/${tp[1]} ≈ <b>${Math.round(tp[0]/tp[1]*1000)/1000}</b>.`, 0.002);
+    }
+  ],
+  2:[
+    ()=>{const tp=P([[3,4,5],[6,8,10],[5,12,13]]);
+      return mk(`直角三角形中，θ 的對邊 = ${tp[0]}，斜邊 = ${tp[2]}。求 sin θ（三位小數）。`,
+                `Opposite ${tp[0]}, hypotenuse ${tp[2]}. Find sin θ (3 d.p.).`,
+                Math.round(tp[0]/tp[2]*1000)/1000,
+        `sin θ = 對邊 ÷ 斜邊<br>= ${tp[0]} ÷ ${tp[2]} ≈ <b>${Math.round(tp[0]/tp[2]*1000)/1000}</b>`,
+        `${tp[0]}/${tp[2]} = <b>${Math.round(tp[0]/tp[2]*1000)/1000}</b>.`, 0.002);
+    },
+    ()=>{const h=R(10,40)*10, ang=pick([30,45,60]);
+      const tanv = ang===30?0.5774:(ang===45?1:1.7321);
+      return mk(`在水平地面上距離某建築物 ${h} m 處，測得樓頂仰角為 ${ang}°。求建築物高度（m，取一位小數，tan 30°=0.5774，tan 45°=1，tan 60°=1.7321）。`,
+                `From ${h} m away, the elevation angle of a building is ${ang}°. Find its height (1 d.p.).`,
+                R2(h*tanv),
+        `tan ${ang}° = 高度 ÷ 水平距離<br>高度 = ${h} × tan ${ang}° = ${h} × ${tanv} ≈ <b>${R2(h*tanv)} m</b>`,
+        `h = ${h} × ${tanv} ≈ <b>${R2(h*tanv)} m</b>.`, 0.15);
+    }
+  ],
+  3:[
+    ()=>{const h=R(5,20)*10, ang=pick([30,45,60]);
+      const tanv = ang===30?0.5774:(ang===45?1:1.7321);
+      return mk(`在距離澳門旅遊塔 ${h} m 處，測得塔頂仰角 ${ang}°。求塔高（m，取整數）。`,
+                `From ${h} m away, the elevation of Macau Tower is ${ang}°. Find its height (integer).`,
+                Math.round(h*tanv),
+        `tan ${ang}° = 塔高 / 水平距離<br>塔高 = ${h} × tan ${ang}° = ${h} × ${tanv} ≈ <b>${Math.round(h*tanv)} m</b>`,
+        `${h} × ${tanv} ≈ <b>${Math.round(h*tanv)} m</b>.`, 0.6);
+    },
+    ()=>{const s=pick([0.5,0.6,0.8]);
+      return mk(`直角三角形中，sin θ = ${s}。求 cos θ（取三位小數）。`,
+                `In a right triangle, sin θ = ${s}. Find cos θ (3 d.p.).`,
+                Math.round(Math.sqrt(1-s*s)*1000)/1000,
+        `sin²θ + cos²θ = 1<br>cos²θ = 1 − ${s}² = 1 − ${R2(s*s)} = ${R2(1-s*s)}<br>cos θ = √${R2(1-s*s)} ≈ <b>${Math.round(Math.sqrt(1-s*s)*1000)/1000}</b>`,
+        `cos θ = √(1−${R2(s*s)}) ≈ <b>${Math.round(Math.sqrt(1-s*s)*1000)/1000}</b>.`, 0.002);
+    }
+  ]
+};
+
+BANK['f3-7'] = {
+  1:[
+    ()=>{const a=R(2,9)*20;
+      return mk(`同一弧所對的圓心角為 ${a}°，求該弧所對的圓周角（度）。`,
+                `An arc subtends ${a}° at the centre. Find the angle at the circumference (degrees).`,
+                a/2, `圓心角 = 2 × 圓周角<br>圓周角 = ${a}° ÷ 2 = <b>${a/2}°</b>`,
+        `${a}° ÷ 2 = <b>${a/2}°</b>.`, 0.1);
+    }
+  ],
+  2:[
+    ()=>{const a=R(20,70);
+      return mk(`同一弧所對的圓周角為 ${a}°，求圓心角（度）。`,
+                `An arc subtends ${a}° at the circumference. Find the angle at the centre (degrees).`,
+                a*2, `圓心角 = 2 × 圓周角 = 2 × ${a}° = <b>${a*2}°</b>`,
+        `2 × ${a}° = <b>${a*2}°</b>.`, 0.1);
+    },
+    ()=>{const a=R(30,80);
+      return mk(`圓內接四邊形 ABCD 中，∠A = ${a}°。求 ∠C（度）。`,
+                `In cyclic quadrilateral ABCD, ∠A = ${a}°. Find ∠C (degrees).`,
+                180-a, `圓內接四邊形<b>對角互補</b>：<br>∠A + ∠C = 180°<br>∠C = 180° − ${a}° = <b>${180-a}°</b>`,
+        `180° − ${a}° = <b>${180-a}°</b>.`, 0.1);
+    }
+  ],
+  3:[
+    ()=>{const r=R(2,10), th=pick([30,45,60,90,120,180]);
+      return mk(`半徑 ${r} cm、圓心角 ${th}° 的扇形，求面積（cm²，π = 3.14，一位小數）。`,
+                `A sector has radius ${r} cm and angle ${th}°. Find its area (π = 3.14, 1 d.p.).`,
+                R2(3.14*r*r*th/360),
+        `扇形面積 = πr² × (θ/360°)<br>= 3.14 × ${r}² × (${th}/360)<br>= 3.14 × ${r*r} × ${R2(th/360)}<br>≈ <b>${R2(3.14*r*r*th/360)} cm²</b>`,
+        `πr² × ${th}/360 ≈ <b>${R2(3.14*r*r*th/360)} cm²</b>.`, 0.2);
+    },
+    ()=>{const a=R(20,80);
+      return mk(`AB 是圓的直徑，C 在圓周上。若 ∠ABC = ${a}°，求 ∠BAC（度）。`,
+                `AB is a diameter and C is on the circle. If ∠ABC = ${a}°, find ∠BAC (degrees).`,
+                90-a,
+        `直徑所對的圓周角 = 90°，所以 ∠ACB = 90°<br>三角形 ABC 內角和 180°：<br>∠BAC = 180° − 90° − ${a}° = <b>${90-a}°</b>`,
+        `∠ACB = 90° → ∠BAC = 180° − 90° − ${a}° = <b>${90-a}°</b>.`, 0.1);
+    }
+  ]
+};
+
+BANK['f3-8'] = {
+  1:[
+    ()=>{const n=5, nums=Array.from({length:n},()=>R(1,30)).sort((a,b)=>a-b);
+      return mk(`求 ${nums.join('、')} 的中位數。`,`Find the median of ${nums.join(', ')}.`,
+        nums[2], `排序後：${nums.join('、')}<br>共 5 個（奇數），中位數是第 3 個：<b>${nums[2]}</b>`,
+        `Sorted: ${nums.join(', ')} → <b>${nums[2]}</b>.`, 0.01);
+    }
+  ],
+  2:[
+    ()=>{const nums=[R(1,9),R(1,9),R(1,9),R(1,9),R(1,9)];
+      const cnt={}; nums.forEach(n=>cnt[n]=(cnt[n]||0)+1);
+      let mode=nums[0], mc=0;
+      for(const k in cnt){ if(cnt[k]>mc){mc=cnt[k]; mode=+k;} }
+      return mk(`求 ${nums.join('、')} 的眾數。`,`Find the mode of ${nums.join(', ')}.`,
+        mode, `統計出現次數：<br>${Object.keys(cnt).map(k=>`${k} 出現 ${cnt[k]} 次`).join('，')}<br>出現最多的是 <b>${mode}</b>`,
+        `The most frequent value is <b>${mode}</b>.`, 0.01);
+    }
+  ],
+  3:[
+    ()=>{const mean=R(60,90), n=5, arr=Array.from({length:4},()=>R(50,100));
+      const miss = mean*n - arr.reduce((a,b)=>a+b,0);
+      return mk(`5 個數據的平均數為 ${mean}，其中 4 個為 ${arr.join('、')}，求第 5 個數據。`,
+                `The mean of 5 numbers is ${mean}. Four of them are ${arr.join(', ')}. Find the fifth.`,
+                miss,
+        `總和 = 平均 × 個數 = ${mean} × 5 = ${mean*n}<br>已知 4 個之和 = ${arr.reduce((a,b)=>a+b,0)}<br>第 5 個 = ${mean*n} − ${arr.reduce((a,b)=>a+b,0)} = <b>${miss}</b>`,
+        `${mean*n} − ${arr.reduce((a,b)=>a+b,0)} = <b>${miss}</b>.`, 0.01);
+    }
+  ]
+};
+
+/* ============================================================
+   6. AI 答疑知識庫（本地）
+   ============================================================ */
+const AI_KB = [
+  {k:['一元二次','二次方程','quadratic','求根','判別式'],
+   a:{zh:`<b>一元二次方程 ax² + bx + c = 0（a ≠ 0）</b>\n\n① <b>因式分解法</b>：整理成 (x − p)(x − q) = 0 → x = p 或 x = q。\n\n② <b>公式法</b>：x = [−b ± √(b² − 4ac)] ÷ 2a。\n\n③ <b>判別式 Δ = b² − 4ac</b>：\n• Δ > 0 → 兩個相異實根\n• Δ = 0 → 一個重根\n• Δ < 0 → 沒有實根\n\n④ <b>韋達定理</b>：兩根和 = −b/a，兩根積 = c/a。\n\n🎯 建議：先嘗試因式分解，不行再用公式法。解完務必代回驗算。`, 
+      en:`<b>Quadratic equation ax² + bx + c = 0 (a ≠ 0)</b>\n\n① Factorisation: (x − p)(x − q) = 0 → x = p or q.\n\n② Formula: x = [−b ± √(b² − 4ac)] ÷ 2a.\n\n③ Discriminant Δ = b² − 4ac:\n• Δ > 0: two distinct real roots\n• Δ = 0: repeated root\n• Δ < 0: no real roots\n\n④ Sum/product of roots: −b/a and c/a.`}},
+  {k:['因式分解','factor','十字','平方差','提取公因式'],
+   a:{zh:`<b>因式分解四步法</b>\n\n① <b>先提公因式</b>：6x² + 9x = 3x(2x + 3)。\n\n② <b>平方差</b>：a² − b² = (a + b)(a − b)，如 x² − 16 = (x+4)(x−4)。\n\n③ <b>完全平方</b>：a² ± 2ab + b² = (a ± b)²，如 x² + 10x + 25 = (x+5)²。\n\n④ <b>十字相乘</b>：x² + bx + c，找兩數「積 = c、和 = b」。\n例：x² + 5x + 6 → 2×3=6、2+3=5 → (x+2)(x+3)。\n\n⚠️ 記得「分解到底」！2x² − 8 = 2(x+2)(x−2)。`,
+      en:`<b>Factorisation — four steps</b>\n\n① Common factor first.\n② Difference of squares: a² − b² = (a+b)(a−b).\n③ Perfect square: a² ± 2ab + b² = (a ± b)².\n④ Cross method for x² + bx + c: product = c, sum = b.\n\n⚠️ Always factorise completely.`}},
+  {k:['畢氏','勾股','pythagoras','斜邊','直角三角形'],
+   a:{zh:`<b>畢氏定理</b>\n\n直角三角形中：<b>a² + b² = c²</b>（c 是斜邊，即直角所對的最長邊）。\n\n• 求斜邊：c = √(a² + b²)\n• 求直角邊：b = √(c² − a²)\n\n<b>逆定理</b>：若 a² + b² = c²（c 最長），則該三角形是直角三角形。\n\n常用勾股數：(3,4,5)、(5,12,13)、(8,15,17)、(7,24,25)。\n\n⚠️ 常見錯誤：沒確認哪條是斜邊就代公式。`,
+      en:`<b>Pythagoras' Theorem</b>\n\na² + b² = c² (c = hypotenuse).\n\nConverse: if a² + b² = c² then the triangle is right-angled.\n\nCommon triples: (3,4,5), (5,12,13), (8,15,17), (7,24,25).`}},
+  {k:['三角比','sin','cos','tan','仰角','俯角','三角函數'],
+   a:{zh:`<b>三角比（SOH-CAH-TOA）</b>\n\n• sin θ = 對邊 ÷ 斜邊\n• cos θ = 鄰邊 ÷ 斜邊\n• tan θ = 對邊 ÷ 鄰邊\n\n<b>特殊角</b>：\nsin 30° = ½、cos 30° = √3/2、tan 30° = 1/√3\nsin 45° = cos 45° = √2/2、tan 45° = 1\nsin 60° = √3/2、cos 60° = ½、tan 60° = √3\n\n<b>仰角題</b>：tan(仰角) = 高度 ÷ 水平距離。\n\n⚠️ 對邊與鄰邊要看你「相對於哪個角」來判斷。`,
+      en:`<b>Trigonometric ratios (SOH-CAH-TOA)</b>\n\nsin = opp/hyp, cos = adj/hyp, tan = opp/adj.\n\nSpecial angles: sin30°=½, cos30°=√3/2, tan45°=1, sin60°=√3/2.\n\nElevation: tan θ = height ÷ horizontal distance.`}},
+  {k:['概率','機率','probability','抽球','不放回'],
+   a:{zh:`<b>概率基本功</b>\n\nP(事件) = 有利結果數 ÷ 所有可能結果數\n\n• P(必然) = 1，P(不可能) = 0\n• P(不發生) = 1 − P(發生)\n\n<b>兩次抽取</b>：\n• 有放回：兩次概率直接相乘\n• 不放回：第二次的分母要減 1\n\n<b>「至少一次」</b>：先算「一次都沒有」的補事件，再用 1 減。\n\n例：袋中 2 紅 3 藍，不放回抽兩次都紅 = (2/5)×(1/4) = 0.1。`,
+      en:`<b>Probability basics</b>\n\nP = favourable ÷ total.\n\nP(not A) = 1 − P(A).\n\nWithout replacement: denominator decreases. For "at least one", use the complement.`}},
+  {k:['不等式','inequality','變號','負數'],
+   a:{zh:`<b>一元一次不等式</b>\n\n解法與方程相似：去括號 → 移項 → 化係數為 1。\n\n⚠️ <b>關鍵</b>：兩邊同乘或同除<b>負數</b>時，<b>不等號要反向</b>！\n\n例：−2x ≥ 8 → x ≤ −4。\n\n<b>整數解</b>：x < 5 的最大整數解是 4（不是 5！）。`,
+      en:`<b>Linear inequalities</b>\n\nReverse the sign when multiplying/dividing by a negative number.\n\nExample: −2x ≥ 8 → x ≤ −4.`}},
+  {k:['指數','index','指數律','次方'],
+   a:{zh:`<b>指數律</b>\n\n① aᵐ × aⁿ = aᵐ⁺ⁿ\n② aᵐ ÷ aⁿ = aᵐ⁻ⁿ\n③ (aᵐ)ⁿ = aᵐⁿ\n④ (ab)ⁿ = aⁿbⁿ\n⑤ a⁰ = 1（a≠0），a⁻ⁿ = 1/aⁿ\n\n⚠️ 這些規律<b>只適用於乘除</b>！aᵐ + aⁿ 不能合併。\n⚠️ (2x)² = 4x²，不是 2x²。`,
+      en:`<b>Index laws</b>\n\naᵐ×aⁿ=aᵐ⁺ⁿ; aᵐ÷aⁿ=aᵐ⁻ⁿ; (aᵐ)ⁿ=aᵐⁿ; a⁰=1; a⁻ⁿ=1/aⁿ.\n\n⚠️ These apply to × and ÷ only — not to addition.`}},
+  {k:['圓','circle','圓周角','圓心角','切線','弦'],
+   a:{zh:`<b>圓的常用性質</b>\n\n① 同一弧：圓心角 = 2 × 圓周角\n② 直徑所對的圓周角 = 90°\n③ 同弓形的圓周角相等\n④ 切線 ⊥ 過切點的半徑\n⑤ 圓外一點引兩切線，切線長相等\n⑥ 圓內接四邊形對角互補（相加 180°）\n\n扇形：弧長 = 2πr×(θ/360°)，面積 = πr²×(θ/360°)。`,
+      en:`<b>Circle properties</b>\n\n① Angle at centre = 2 × angle at circumference\n② Angle in semicircle = 90°\n③ Angles in same segment equal\n④ Tangent ⊥ radius\n⑤ Tangents from an external point are equal\n⑥ Cyclic quadrilateral: opposite angles supplementary`}},
+  {k:['平均數','中位數','眾數','mean','median','mode','統計'],
+   a:{zh:`<b>三個集中趨勢量度</b>\n\n• <b>平均數</b> = 總和 ÷ 個數（受極端值影響）\n• <b>中位數</b>：排序後中間的數（不受極端值影響）\n• <b>眾數</b>：出現最多次的數\n\n<b>何時用哪個？</b>\n有極端值（收入、房價）→ 中位數\n分類數據（鞋碼）→ 眾數\n一般情況 → 平均數\n\n加權平均 = Σ(值×權重) ÷ Σ權重。`,
+      en:`<b>Mean, median, mode</b>\n\nMean = sum ÷ count (affected by extremes)\nMedian = middle value after sorting (robust)\nMode = most frequent\n\nWeighted mean = Σ(value × weight) ÷ Σweight.`}},
+  {k:['函數','拋物線','頂點','對稱軸','二次函數'],
+   a:{zh:`<b>二次函數 y = ax² + bx + c</b>\n\n• a > 0 開口向上（有極小值）；a < 0 開口向下（有極大值）\n• 對稱軸 x = −b/(2a)\n• 頂點坐標：橫坐標 −b/(2a)，縱坐標代入求得\n\n<b>頂點式</b> y = a(x − h)² + k → 頂點 (h, k)，對稱軸 x = h。\n\n與 x 軸交點：令 y = 0 解二次方程。`,
+      en:`<b>Quadratic function y = ax² + bx + c</b>\n\na > 0 opens up (min); a < 0 opens down (max).\nAxis: x = −b/(2a).\nVertex form: y = a(x−h)²+k → vertex (h,k).`}},
+  {k:['相似','similar','面積比','邊長比'],
+   a:{zh:`<b>相似三角形</b>\n\n判定：AAA（或 AA）、SSS（三邊成比例）、SAS（兩邊成比例且夾角相等）。\n\n• 對應邊成比例\n• <b>面積比 = (邊長比)²</b>\n• <b>體積比 = (邊長比)³</b>\n\n例：邊長比 2:3 → 面積比 4:9 → 體積比 8:27。\n\n⚠️ 最常見錯誤：把面積比當成邊長比。`,
+      en:`<b>Similar triangles</b>\n\nTests: AAA/AA, SSS, SAS.\n\nArea ratio = (side ratio)²; Volume ratio = (side ratio)³.\n\n⚠️ Do not confuse area ratio with side ratio.`}}
+];
+
+function aiAnswer(text){
+  const s = text.toLowerCase();
+  // 特殊指令
+  if(/總結|复盘|複盤|分析錯題|錯題總結|review/.test(text)){
+    return summarizeWrong();
+  }
+  if(/錯題本|錯題|wrong book/.test(text)){
+    const d = DB.data(state.user);
+    if(!d.wrong.length) return '你的錯題本目前是空的，太棒了！繼續保持 📚';
+    return `你的錯題本共有 <b>${d.wrong.length}</b> 題。\n\n${d.wrong.slice(0,5).map((w,i)=>`${i+1}. ${w.topicName || w.topic}`).join('\n')}\n\n🎯 到「我的 → 錯題本」可以逐題查看詳細解析。`;
+  }
+  if(/你好|hi|hello|哈囉/.test(s)){
+    return '你好！我是你的數學 AI 助教 ✨\n\n你可以問我：\n• 一元二次方程怎麼解？\n• 因式分解有什麼方法？\n• 概率怎麼算？\n\n也可以直接說「總結我的錯題」幫你分析學習狀況。';
+  }
+  for(const item of AI_KB){
+    if(item.k.some(k=>s.includes(k.toLowerCase()))){
+      return item.a[state.lang] || item.a.zh;
+    }
+  }
+  return `我暫時未能完全理解這個問題 ⭐\n\n試試這樣問：\n• 「一元二次方程怎麼解」\n• 「因式分解的方法」\n• 「畢氏定理」\n• 「概率怎麼算」\n• 「總結我的錯題」\n\n🎲 小提示：目前是<b>本地知識庫模式</b>，可在程式碼中接入真實 AI API 來回答任何問題。`;
+}
+
+function summarizeWrong(){
+  const d = DB.data(state.user);
+  if(!d.wrong.length) return '📌 <b>學習總結</b>\n\n你的錯題本是空的——目前沒有需要複習的錯題。\n\n建議：去「專題練習」挑戰更高難度，持續鞏固！';
+  const byTopic = {};
+  d.wrong.forEach(w=>{
+    const k = w.topicName || w.topic || '其他';
+    byTopic[k] = (byTopic[k]||0) + 1;
+  });
+  const sorted = Object.entries(byTopic).sort((a,b)=>b[1]-a[1]);
+  let out = `📌 <b>錯題總結報告</b>\n\n共 <b>${d.wrong.length}</b> 道錯題，分佈如下：\n\n`;
+  sorted.forEach(([k,v])=>{
+    const bar = '█'.repeat(Math.min(v,12));
+    out += `${k}：${bar} ${v} 題\n`;
+  });
+  const top = sorted[0];
+  out += `\n📐 <b>重點複習建議</b>\n最需要加強的是「<b>${top[0]}</b>」（${top[1]} 題）。\n\n`;
+  out += `💡 <b>複習步驟</b>\n1. 到「學習」頁重讀該課題的詳細講解\n2. 到「專題練習」選擇該課題，用「基礎 → 進階 → 挑戰」遞進訓練\n3. 每題做完查看解析，理解錯誤原因\n4. 3 天後再做一次同類題目鞏固`;
+  return out;
+}
+
+/* ============================================================
+   7. 渲染
+   ============================================================ */
+const navItems = [
+  {id:'home', key:'navHome'},
+  {id:'learn', key:'navLearn'},
+  {id:'exam', key:'navExam'},
+  {id:'graph', key:'navGraph'},
+  {id:'ai', key:'navAI'},
+  {id:'user', key:'navUser'}
+];
+
+function renderNav(){
+  $('#nav').innerHTML = navItems.map(n=>
+    `<button data-v="${n.id}" class="${state.view===n.id?'active':''}">${t(n.key)}</button>`
+  ).join('');
+  $$('#nav button').forEach(b=>{
+    b.onclick = ()=>{ state.view = b.dataset.v; render(); };
+  });
+
+  const uc = $('#userChip');
+  if(state.user){
+    uc.innerHTML = `<span class="avatar">${esc(state.user[0].toUpperCase())}</span><span>${esc(state.user)}</span>`;
+  } else {
+    uc.innerHTML = `<span class="avatar">?</span><span>${t('login')}</span>`;
+  }
+  uc.onclick = ()=>{ state.view='user'; render(); };
+}
+
+function render(){
+  document.documentElement.lang = state.lang==='zh'?'zh-Hant':'en';
+  $$('[data-i]').forEach(el=>{ el.textContent = t(el.dataset.i); });
+  $$('[data-i-ph]').forEach(el=>{ el.placeholder = t(el.dataset.iPh); });
+  $$('.lang-switch button').forEach(b=>b.classList.toggle('active', b.dataset.lang===state.lang));
+
+  renderNav();
+
+  $$('.view').forEach(v=>v.classList.toggle('active', v.id==='view-'+state.view));
+
+  if(state.view==='home') renderHome();
+  if(state.view==='learn') renderLearn();
+  if(state.view==='exam') renderExam();
+  if(state.view==='graph') initGraph();
+  if(state.view==='ai') renderAI();
+  if(state.view==='user') renderUser();
+
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ---------- 首頁 ---------- */
+function renderHome(){
+  $('#gradeGrid').innerHTML = Object.keys(GRADE_META).map(g=>{
+    const m = GRADE_META[g];
+    const tags = TOPICS[g].slice(0,3).map(tp=>`<span>${tp.title[state.lang]}</span>`).join('');
+    return `<div class="gcard" data-g="${g}" tabindex="0">
+      <div class="gico">${g.toUpperCase()}</div>
+      <div class="gtitle">${m.name[state.lang]}</div>
+      <p class="gdesc">${m.desc[state.lang]}</p>
+      <div class="gtags">${tags}<span>+${TOPICS[g].length-3}</span></div>
+      <div class="garrow">→</div>
+    </div>`;
+  }).join('');
+
+  $$('.gcard').forEach(c=>{
+    const go = ()=>{
+      state.learnGrade = c.dataset.g;
+      state.learnTopic = TOPICS[c.dataset.g][0].id;
+      state.view = 'learn'; render();
+    };
+    c.onclick = go;
+    c.onkeydown = e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); go(); } };
+  });
+
+  $('#quickLinks').innerHTML = `
+    <button class="opt" data-go="exam">📊 ${t('quickExam')}</button>
+    <button class="opt" data-go="graph">🧭 ${t('quickGraph')}</button>
+    <button class="opt" data-go="ai">✨ ${t('quickAI')}</button>
+    <button class="opt" data-go="user">📝 ${t('quickUser')}</button>`;
+  $$('#quickLinks button').forEach(b=>{
+    b.onclick = ()=>{ state.view = b.dataset.go; render(); };
+  });
+}
+
+/* ---------- 學習 ---------- */
+function renderLearn(){
+  const g = state.learnGrade;
+  $('#gswitch').innerHTML = ['f1','f2','f3'].map(x=>
+    `<button data-g="${x}" class="${g===x?'active':''}">${x.toUpperCase()}</button>`
+  ).join('');
+  $$('#gswitch button').forEach(b=>{
+    b.onclick = ()=>{
+      state.learnGrade = b.dataset.g;
+      state.learnTopic = TOPICS[b.dataset.g][0].id;
+      renderLearn();
+    };
+  });
+
+  $('#tlist').innerHTML = TOPICS[g].map(tp=>
+    `<li class="titem ${tp.id===state.learnTopic?'active':''}" data-id="${tp.id}">
+      <span class="ti">${tp.icon}</span><span>${tp.title[state.lang]}</span>
+    </li>`).join('');
+  $$('#tlist .titem').forEach(li=>{
+    li.onclick = ()=>{ state.learnTopic = li.dataset.id; renderLearn(); };
+  });
+
+  const tp = TOPICS[g].find(x=>x.id===state.learnTopic) || TOPICS[g][0];
+  const html = (CONTENT[tp.id] && CONTENT[tp.id][state.lang]) || '<p>內容準備中…</p>';
+  const color = GRADE_META[g].color;
+  $('#content').innerHTML =
+    `<div class="chead">
+       <span class="cico" style="background:${color}18;color:${color}">${tp.icon}</span>
+       <div><h2>${tp.title[state.lang]}</h2>
+       <div style="font-size:12px;color:#7b8798;font-weight:700">${GRADE_META[g].name[state.lang]}</div></div>
+     </div>${html}`;
+}
+
+/* ---------- 專題練習 ---------- */
+function renderExam(){
+  const E = state.exam;
+  if(!E || E.stage==='setup'){ renderExamSetup(); $('#examSetup').style.display='block';
+    $('#examRun').style.display='none'; $('#examResult').style.display='none'; }
+  else if(E.stage==='run'){ renderExamRun(); $('#examSetup').style.display='none';
+    $('#examRun').style.display='block'; $('#examResult').style.display='none'; }
+  else { renderExamResult(); $('#examSetup').style.display='none';
+    $('#examRun').style.display='none'; $('#examResult').style.display='block'; }
+}
+
+function renderExamSetup(){
+  const E = state.exam = state.exam || {stage:'setup', grade:'f1', topic:'f1-1', count:5, level:1};
+  if(E.stage!=='setup') return;
+
+  const topicOpts = TOPICS[E.grade].map(tp=>
+    `<button class="tpc ${E.topic===tp.id?'active':''}" data-t="${tp.id}">
+      <b>${tp.icon} ${tp.title[state.lang]}</b>
+      <span>${GRADE_META[E.grade].name[state.lang]}</span>
+    </button>`).join('');
+
+  $('#examSetup').innerHTML = `
+    <div class="panel" style="margin-bottom:16px">
+      <h3>📊 ${t('examTitle')}</h3>
+      <p style="font-size:13px;color:#7b8798;margin-bottom:18px">${t('examSub')}</p>
+      <div class="exam-setup">
+        <div>
+          <div style="font-size:12.5px;font-weight:800;color:#475569;margin-bottom:8px">${t('pickGrade')}</div>
+          <div class="opt-row" id="egrade">
+            ${['f1','f2','f3'].map(g=>`<button class="opt ${E.grade===g?'active':''}" data-g="${g}">${GRADE_META[g].name[state.lang]}</button>`).join('')}
+          </div>
+        </div>
+        <div>
+          <div style="font-size:12.5px;font-weight:800;color:#475569;margin-bottom:8px">${t('pickTopic')}</div>
+          <div class="topic-pick" id="etopic">${topicOpts}</div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
+          <div>
+            <div style="font-size:12.5px;font-weight:800;color:#475569;margin-bottom:8px">${t('pickCount')}</div>
+            <div class="opt-row" id="ecount">
+              ${[5,10,15,20].map(n=>`<button class="opt ${E.count===n?'active':''}" data-c="${n}">${n} ${t('countUnit')}</button>`).join('')}
+            </div>
+          </div>
+          <div>
+            <div style="font-size:12.5px;font-weight:800;color:#475569;margin-bottom:8px">${t('pickLevel')}</div>
+            <div class="opt-row" id="elevel">
+              ${[1,2,3,0].map(l=>`<button class="opt ${E.level===l?'active':''}" data-l="${l}">${l===0?t('lvMix'):t('lv'+l)}</button>`).join('')}
+            </div>
+          </div>
+        </div>
+        <div><button class="btn primary" id="examStart" style="width:100%;padding:14px">🚀 ${t('startExam')}</button></div>
+      </div>
+    </div>`;
+
+  $$('#egrade .opt').forEach(b=>b.onclick=()=>{
+    E.grade = b.dataset.g; E.topic = TOPICS[b.dataset.g][0].id; renderExamSetup();
+  });
+  $$('#etopic .tpc').forEach(b=>b.onclick=()=>{ E.topic=b.dataset.t; renderExamSetup(); });
+  $$('#ecount .opt').forEach(b=>b.onclick=()=>{ E.count=+b.dataset.c; renderExamSetup(); });
+  $$('#elevel .opt').forEach(b=>b.onclick=()=>{ E.level=+b.dataset.l; renderExamSetup(); });
+  $('#examStart').onclick = startExam;
+}
+
+function startExam(){
+  const E = state.exam;
+  const bank = BANK[E.topic];
+  if(!bank){ alert('此課題暫無題目，請選擇其他課題。'); return; }
+
+  const qs = [];
+  for(let i=0;i<E.count;i++){
+    let lv;
+    if(E.level===0){
+      // 混合：偏向中難
+      const r = Math.random();
+      lv = r<0.3 ? 1 : (r<0.75 ? 2 : 3);
+    } else lv = E.level;
+    const pool = bank[lv] || bank[1];
+    const gen = P(pool);
+    const q = gen();
+    q.level = lv;
+    qs.push(q);
+  }
+
+  const tp = TOPICS[E.grade].find(x=>x.id===E.topic);
+  state.exam = {
+    stage:'run', grade:E.grade, topic:E.topic, topicName:tp.title[state.lang],
+    count:E.count, level:E.level, qs, idx:0, answers:Array(E.count).fill(null),
+    startTime: Date.now()
+  };
+  renderExam();
+}
+
+function renderExamRun(){
+  const E = state.exam;
+  const q = E.qs[E.idx];
+  const answered = E.answers[E.idx] !== null;
+
+  $('#examRun').innerHTML = `
+    <div class="panel">
+      <div class="qbar">
+        <span>${t('question',{n:E.idx+1,t:E.count})}</span>
+        <span>${GRADE_META[E.grade].name[state.lang]} · ${E.topicName} · ${t('lv'+q.level)}</span>
+      </div>
+      <div class="progress"><i style="width:${(E.idx/E.count)*100}%"></i></div>
+      <div class="qtext">${q.q[state.lang]}</div>
+      <div class="ansrow">
+        <input type="text" id="examInput" inputmode="decimal" autocomplete="off"
+          placeholder="${t('inputPh')}" value="${answered?esc(E.answers[E.idx].raw):''}" ${answered?'disabled':''}>
+        <button class="btn primary" id="examSubmit" ${answered?'disabled':''}>${t('submit')}</button>
+      </div>
+      <div class="feedback ${answered?(E.answers[E.idx].ok?'ok':'bad'):''}" id="examFb">
+        ${answered ? (E.answers[E.idx].ok ? t('correct') : t('wrong') + NUM(q.ans)) : ''}
+      </div>
+      <div class="explain ${answered?'show':''}" id="examExplain">
+        <h5>🎲 ${t('detailTitle')}</h5>
+        ${answered ? q.ex[state.lang] : ''}
+      </div>
+      <button class="btn ghost" id="examNext" style="width:100%;margin-top:16px;${answered?'':'display:none'}">
+        ${E.idx+1 < E.count ? t('next') : t('finish')}
+      </button>
+    </div>`;
+
+  if(!answered){
+    setTimeout(()=>{ const i=$('#examInput'); if(i) i.focus(); },80);
+  }
+
+  $('#examSubmit').onclick = submitExamAnswer;
+  $('#examInput').onkeydown = e=>{ if(e.key==='Enter') submitExamAnswer(); };
+  $('#examNext').onclick = ()=>{
+    if(E.idx+1 < E.count){ E.idx++; renderExamRun(); }
+    else finishExam();
+  };
+}
+
+function submitExamAnswer(){
+  const E = state.exam;
+  const q = E.qs[E.idx];
+  const input = $('#examInput');
+  if(!input) return;
+  const raw = input.value.trim().replace(/[−–—]/g,'-').replace(/[,，]/g,'');
+  if(raw==='') return;
+
+  let ok = false;
+  const tol = q.tol==null?0.01:q.tol;
+  if(tol===null || typeof q.ans==='string'){
+    // 字串答案（如比例）
+    const norm = s=>s.replace(/\s/g,'').replace(/：/g,':').toLowerCase();
+    ok = norm(raw) === norm(String(q.ans));
+  } else {
+    const v = Number(raw);
+    if(!isNaN(v)) ok = Math.abs(v - q.ans) < Math.max(tol, 1e-9);
+  }
+
+  E.answers[E.idx] = {raw, ok, ans:q.ans};
+  renderExamRun();
+}
+
+function finishExam(){
+  const E = state.exam;
+  const correct = E.answers.filter(a=>a && a.ok).length;
+  const secs = Math.round((Date.now()-E.startTime)/1000);
+
+  E.stage = 'result';
+  E.correct = correct;
+  E.secs = secs;
+  E.finishedAt = new Date().toISOString();
+
+  // 保存到用户数据
+  if(state.user){
+    const d = DB.data(state.user);
+    const rec = {
+      id: 'h'+Date.now(),
+      date: E.finishedAt,
+      grade: E.grade, topic: E.topic, topicName: E.topicName,
+      level: E.level, total: E.count, correct, secs,
+      details: E.qs.map((q,i)=>{
+        const a = E.answers[i];
+        return {
+          q: q.q, ans: q.ans, ex: q.ex, level: q.level,
+          userRaw: a ? a.raw : null, ok: a ? a.ok : false
+        };
+      })
+    };
+    d.history.unshift(rec);
+    if(d.history.length > 100) d.history = d.history.slice(0,100);
+
+    // 錯題本
+    E.qs.forEach((q,i)=>{
+      const a = E.answers[i];
+      if(!a || !a.ok){
+        d.wrong.unshift({
+          id: 'w'+Date.now()+'_'+i,
+          date: E.finishedAt,
+          topic: E.topic, topicName: E.topicName,
+          grade: E.grade,
+          q: q.q, ans: q.ans, ex: q.ex, level: q.level,
+          userRaw: a ? a.raw : null
+        });
+      }
+    });
+    if(d.wrong.length > 300) d.wrong = d.wrong.slice(0,300);
+    DB.save(state.user, d);
+  }
+
+  renderExam();
+}
+
+function renderExamResult(){
+  const E = state.exam;
+  const pct = Math.round(E.correct / E.count * 100);
+  const color = pct>=80?'#16a34a':(pct>=60?'#f59e0b':'#dc2626');
+
+  $('#examResult').innerHTML = `
+    <div class="panel">
+      <div class="result-big">
+        <div class="num" style="color:${color}">${pct}<span style="font-size:22px">%</span></div>
+        <div class="lbl">${t('resultTitle')}</div>
+      </div>
+      <div class="result-stats">
+        <div class="rstat"><b>${E.correct}/${E.count}</b><span>${t('score')}</span></div>
+        <div class="rstat"><b>${pct}%</b><span>${t('accuracy')}</span></div>
+        <div class="rstat"><b>${E.secs}${t('seconds')}</b><span>${t('timeUsed')}</span></div>
+      </div>
+      <p style="font-size:12.5px;color:${state.user?'#16a34a':'#f59e0b'};text-align:center;font-weight:700;margin-bottom:16px">
+        ${state.user ? '✅ '+t('saveHint') : '⚠️ '+t('loginToSave')}
+      </p>
+      <div style="max-height:340px;overflow-y:auto;margin-bottom:16px">
+        ${E.qs.map((q,i)=>{
+          const a = E.answers[i];
+          const ok = a && a.ok;
+          return `<div class="item">
+            <div class="item-head">
+              <b>${i+1}. ${q.q[state.lang]}</b>
+              <span class="badge ${ok?'ok':'bad'}">${ok?'✅':'❌'}</span>
+            </div>
+            <div class="dmeta" style="margin-top:6px">
+              ${t('yourAns')}：${a && a.raw!=='' ? esc(a.raw) : t('noAns')}　|　
+              ${t('rightAns')}：<b>${NUM(q.ans)}</b>
+            </div>
+            <div class="dex" style="margin-top:7px">${q.ex[state.lang]}</div>
+          </div>`;
+        }).join('')}
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn primary" id="resAgain" style="flex:1">🖼 ${t('again')}</button>
+        <button class="btn ghost" id="resBack" style="flex:1">← ${t('backSetup')}</button>
+      </div>
+    </div>`;
+
+  $('#resAgain').onclick = ()=>{ state.exam.stage='setup'; renderExam(); };
+  $('#resBack').onclick = ()=>{ state.exam.stage='setup'; renderExam(); };
+}
+
+/* ---------- 坐標系（GeoGebra 簡化版） ---------- */
+const G = {
+  canvas:null, ctx:null, dpr:1,
+  scale:44, ox:0, oy:0,
+  mode:'point',
+  points:[], segs:[], circles:[], pending:null,
+  drag:null,
+  inited:false,
+  W:0, H:0
+};
+
+function initGraph(){
+  const cv = $('#graphCanvas');
+  if(!cv) return;
+  G.canvas = cv;
+  if(!G.inited){
+    setupCanvas();
+    G.inited = true;
+    window.addEventListener('resize', ()=>{ if(state.view==='graph') setupCanvas(); });
+  }
+  renderGraphTools();
+  drawGraph();
+  renderGList();
+}
+
+function setupCanvas(){
+  const cv = G.canvas;
+  const box = cv.parentElement;
+  const dpr = window.devicePixelRatio || 1;
+  const w = box.clientWidth;
+  const h = parseInt(getComputedStyle(cv).height) || 520;
+  cv.width = w * dpr;
+  cv.height = h * dpr;
+  cv.style.width = w+'px';
+  cv.style.height = h+'px';
+  G.dpr = dpr;
+  G.W = w; G.H = h;
+  G.ctx = cv.getContext('2d');
+  G.ctx.setTransform(dpr,0,0,dpr,0,0);
+  bindGraphEvents();
+}
+
+function toPx(x,y){
+  return [ G.W/2 + (x - G.ox)*G.scale, G.H/2 - (y - G.oy)*G.scale ];
+}
+function toMath(px,py){
+  return [ (px - G.W/2)/G.scale + G.ox, (G.H/2 - py)/G.scale + G.oy ];
+}
+
+function drawGraph(){
+  const ctx = G.ctx, W = G.W, H = G.H, s = G.scale;
+  if(!ctx) return;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0,0,W,H);
+
+  // 網格步長
+  let step = 1;
+  if(s < 22) step = 2;
+  if(s < 12) step = 5;
+  if(s > 85) step = 0.5;
+
+  const [x0,y0] = toMath(0,0);
+  const [x1,y1] = toMath(W,H);
+
+  // 小網格
+  ctx.strokeStyle = '#eef2f9';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  const startX = Math.ceil(x0/step)*step;
+  for(let x = startX; x <= x1; x += step){
+    const [px] = toPx(x,0);
+    ctx.moveTo(px,0); ctx.lineTo(px,H);
+  }
+  const startY = Math.ceil(y1/step)*step;
+  for(let y = startY; y <= y0; y += step){
+    const [,py] = toPx(0,y);
+    ctx.moveTo(0,py); ctx.lineTo(W,py);
+  }
+  ctx.stroke();
+
+  // 坐標軸
+  const [zx, zy] = toPx(0,0);
+  ctx.strokeStyle = '#94a3b8';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(0, zy); ctx.lineTo(W, zy);
+  ctx.moveTo(zx, 0); ctx.lineTo(zx, H);
+  ctx.stroke();
+
+  // 箭頭
+  ctx.fillStyle = '#94a3b8';
+  ctx.beginPath(); ctx.moveTo(W-2,zy); ctx.lineTo(W-11,zy-5); ctx.lineTo(W-11,zy+5); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(zx,2); ctx.lineTo(zx-5,11); ctx.lineTo(zx+5,11); ctx.fill();
+
+  // 刻度數字
+  ctx.fillStyle = '#94a3b8';
+  ctx.font = '11px -apple-system, sans-serif';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  const sx = Math.ceil(x0/step)*step;
+  for(let x = sx; x <= x1; x += step){
+    if(Math.abs(x) < 1e-9) continue;
+    const [px] = toPx(x,0);
+    ctx.beginPath();
+    ctx.moveTo(px, zy-3); ctx.lineTo(px, zy+3);
+    ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1; ctx.stroke();
+    ctx.fillText(NUM(x), px, zy+6);
+  }
+  ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+  const sy = Math.ceil(y1/step)*step;
+  for(let y = sy; y <= y0; y += step){
+    if(Math.abs(y) < 1e-9) continue;
+    const [,py] = toPx(0,y);
+    ctx.beginPath();
+    ctx.moveTo(zx-3, py); ctx.lineTo(zx+3, py);
+    ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1; ctx.stroke();
+    ctx.fillText(NUM(y), zx-7, py);
+  }
+  // 原點
+  ctx.textAlign = 'right'; ctx.textBaseline = 'top';
+  ctx.fillText('O', zx-5, zy+4);
+
+  // 線段
+  ctx.strokeStyle = '#0ea5e9'; ctx.lineWidth = 2.4;
+  G.segs.forEach(sg=>{
+    const [ax,ay] = toPx(sg.a[0],sg.a[1]);
+    const [bx,by] = toPx(sg.b[0],sg.b[1]);
+    ctx.beginPath(); ctx.moveTo(ax,ay); ctx.lineTo(bx,by); ctx.stroke();
+  });
+
+  // 圓
+  G.circles.forEach(c=>{
+    const [cx,cy] = toPx(c.c[0],c.c[1]);
+    ctx.strokeStyle = '#8b5cf6'; ctx.lineWidth = 2.4;
+    ctx.beginPath(); ctx.arc(cx,cy,c.r*G.scale,0,Math.PI*2); ctx.stroke();
+  });
+
+  // 點
+  G.points.forEach((p,i)=>{
+    const [px,py] = toPx(p[0],p[1]);
+    ctx.beginPath(); ctx.arc(px,py,5.5,0,Math.PI*2);
+    ctx.fillStyle = '#f97316'; ctx.fill();
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.fillStyle = '#1e293b';
+    ctx.font = 'bold 11.5px -apple-system, sans-serif';
+    ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
+    ctx.fillText(`(${NUM(R2(p[0]))}, ${NUM(R2(p[1]))})`, px+9, py-4);
+  });
+
+  // 待定點提示
+  if(G.pending){
+    const [px,py] = toPx(G.pending[0],G.pending[1]);
+    ctx.beginPath(); ctx.arc(px,py,6,0,Math.PI*2);
+    ctx.fillStyle = 'rgba(14,165,233,.5)'; ctx.fill();
+    ctx.setLineDash([4,4]);
+    ctx.strokeStyle = '#0ea5e9'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.arc(px,py,10,0,Math.PI*2); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+}
+
+function renderGraphTools(){
+  const modes = [
+    {id:'point',  label:t('addPoint')},
+    {id:'segment',label:t('addSeg')},
+    {id:'circle', label:t('addCircle')},
+    {id:'erase',  label:t('erase')},
+    {id:'pan',    label:t('pan')}
+  ];
+  $('#gtools').innerHTML =
+    modes.map(m=>`<button data-m="${m.id}" class="${G.mode===m.id?'active':''}">${m.label}</button>`).join('') +
+    `<button data-act="zin">＋</button><button data-act="zout">−</button>
+     <button data-act="reset">${t('reset')}</button><button data-act="clear">${t('clear')}</button>`;
+
+  $$('#gtools button').forEach(b=>{
+    b.onclick = ()=>{
+      if(b.dataset.m){ G.mode = b.dataset.m; G.pending = null; renderGraphTools(); drawGraph(); }
+      if(b.dataset.act==='zin'){ G.scale = Math.min(200, G.scale*1.25); drawGraph(); }
+      if(b.dataset.act==='zout'){ G.scale = Math.max(8, G.scale/1.25); drawGraph(); }
+      if(b.dataset.act==='reset'){ G.scale=44; G.ox=0; G.oy=0; drawGraph(); }
+      if(b.dataset.act==='clear'){ G.points=[]; G.segs=[]; G.circles=[]; G.pending=null; drawGraph(); renderGList(); }
+    };
+  });
+}
+
+function renderGList(){
+  const items = [];
+  G.points.forEach((p,i)=>items.push({t:`點 (${NUM(R2(p[0]))}, ${NUM(R2(p[1]))})`, i, type:'p'}));
+  G.segs.forEach((s,i)=>items.push({t:`線段 (${NUM(R2(s.a[0]))},${NUM(R2(s.a[1]))})→(${NUM(R2(s.b[0]))},${NUM(R2(s.b[1]))})`, i, type:'s'}));
+  G.circles.forEach((c,i)=>items.push({t:`圓 心(${NUM(R2(c.c[0]))},${NUM(R2(c.c[1]))}) r=${NUM(R2(c.r))}`, i, type:'c'}));
+
+  const el = $('#glist');
+  if(!items.length){ el.innerHTML = `<li style="justify-content:center;color:#94a3b8;background:transparent">${t('none')}</li>`; return; }
+  el.innerHTML = items.map(it=>
+    `<li><span>${it.t}</span><button data-del="${it.type}${it.i}">🗑</button></li>`).join('');
+  el.querySelectorAll('button').forEach(b=>{
+    b.onclick = ()=>{
+      const k = b.dataset.del;
+      const type = k[0], i = +k.slice(1);
+      if(type==='p'){ G.points.splice(i,1); G.segs = G.segs.filter(s=>Math.abs(s.a[0])<1e9); }
+      if(type==='s') G.segs.splice(i,1);
+      if(type==='c') G.circles.splice(i,1);
+      drawGraph(); renderGList();
+    };
+  });
+}
+
+function bindGraphEvents(){
+  const cv = G.canvas;
+  if(cv._bound) return;
+  cv._bound = true;
+
+  let downPt = null, moved = false;
+
+  cv.addEventListener('pointerdown', e=>{
+    const r = cv.getBoundingClientRect();
+    const px = e.clientX - r.left, py = e.clientY - r.top;
+    downPt = {px, py, ox:G.ox, oy:G.oy};
+    moved = false;
+    cv.setPointerCapture(e.pointerId);
+  });
+
+  cv.addEventListener('pointermove', e=>{
+    if(!downPt) return;
+    const r = cv.getBoundingClientRect();
+    const px = e.clientX - r.left, py = e.clientY - r.top;
+    const dx = px - downPt.px, dy = py - downPt.py;
+    if(Math.abs(dx)>4 || Math.abs(dy)>4) moved = true;
+    if(G.mode==='pan' || e.pointerType==='touch' && e.isPrimary===false){
+      G.ox = downPt.ox - dx/G.scale;
+      G.oy = downPt.oy + dy/G.scale;
+      drawGraph();
+    }
+  });
+
+  cv.addEventListener('pointerup', e=>{
+    const r = cv.getBoundingClientRect();
+    const px = e.clientX - r.left, py = e.clientY - r.top;
+    if(downPt && !moved) handleGraphClick(px, py);
+    downPt = null;
+  });
+
+  cv.addEventListener('pointercancel', ()=>{ downPt = null; });
+
+  cv.addEventListener('wheel', e=>{
+    e.preventDefault();
+    const r = cv.getBoundingClientRect();
+    const px = e.clientX - r.left, py = e.clientY - r.top;
+    const [mx,my] = toMath(px,py);
+    const k = e.deltaY > 0 ? 0.88 : 1.14;
+    G.scale = Math.max(8, Math.min(200, G.scale*k));
+    const [nx,ny] = toMath(px,py);
+    G.ox += mx - nx; G.oy += my - ny;
+    drawGraph();
+  }, {passive:false});
+}
+
+function handleGraphClick(px, py){
+  const [x, y] = toMath(px,py);
+  const rx = Math.round(x*100)/100, ry = Math.round(y*100)/100;
+
+  if(G.mode==='point'){
+    G.points.push([rx, ry]);
+    drawGraph(); renderGList();
+  }
+  else if(G.mode==='segment'){
+    if(!G.pending){ G.pending = [rx,ry]; drawGraph(); }
+    else {
+      G.segs.push({a:G.pending, b:[rx,ry]});
+      G.points.push(G.pending, [rx,ry]);
+      G.pending = null;
+      drawGraph(); renderGList();
+    }
+  }
+  else if(G.mode==='circle'){
+    if(!G.pending){ G.pending = [rx,ry]; drawGraph(); }
+    else {
+      const dx = rx-G.pending[0], dy = ry-G.pending[1];
+      const r = Math.sqrt(dx*dx+dy*dy);
+      if(r > 0.05){
+        G.circles.push({c:G.pending, r});
+        G.points.push(G.pending);
+      }
+      G.pending = null;
+      drawGraph(); renderGList();
+    }
+  }
+  else if(G.mode==='erase'){
+    // 找最近的點
+    let best = -1, bd = 1e9;
+    G.points.forEach((p,i)=>{
+      const [ppx,ppy] = toPx(p[0],p[1]);
+      const d = Math.hypot(ppx-px, ppy-py);
+      if(d < bd){ bd = d; best = i; }
+    });
+    if(bd < 20 && best>=0){ G.points.splice(best,1); drawGraph(); renderGList(); return; }
+    // 找線段
+    for(let i=G.segs.length-1;i>=0;i--){
+      const s = G.segs[i];
+      const [ax,ay]=toPx(s.a[0],s.a[1]), [bx,by]=toPx(s.b[0],s.b[1]);
+      const d = distToSeg(px,py,ax,ay,bx,by);
+      if(d < 10){ G.segs.splice(i,1); drawGraph(); renderGList(); return; }
+    }
+    // 找圓
+    for(let i=G.circles.length-1;i>=0;i--){
+      const c = G.circles[i];
+      const [cx,cy] = toPx(c.c[0],c.c[1]);
+      const rr = c.r*G.scale;
+      if(Math.abs(Math.hypot(px-cx,py-cy) - rr) < 10){ G.circles.splice(i,1); drawGraph(); renderGList(); return; }
+    }
+  }
+}
+
+function distToSeg(px,py,x1,y1,x2,y2){
+  const dx = x2-x1, dy = y2-y1;
+  const l2 = dx*dx+dy*dy;
+  if(l2===0) return Math.hypot(px-x1,py-y1);
+  let t = ((px-x1)*dx+(py-y1)*dy)/l2;
+  t = Math.max(0,Math.min(1,t));
+  return Math.hypot(px-(x1+t*dx), py-(y1+t*dy));
+}
+
+/* ---------- AI 答疑 ---------- */
+const chatHistory = [];
+
+function renderAI(){
+  const log = $('#chatLog');
+  if(!chatHistory.length){
+    chatHistory.push({me:false, text:
+      (state.lang==='zh'
+        ? '你好！我是你的數學 AI 助教 ✨\n\n我可以回答：\n• 一元二次方程怎麼解？\n• 因式分解有什麼方法？\n• 概率怎麼算？\n• 總結我的錯題\n\n也可以上傳題目照片（右側）取得解題框架。'
+        : 'Hi! I am your maths AI tutor ✨\n\nAsk me:\n• How to solve a quadratic equation?\n• How to factorise?\n• How to calculate probability?\n• Summarise my wrong answers\n\nYou can also upload a photo (right panel).')});
+  }
+  renderChatLog();
+
+  const quick = [
+    '一元二次方程怎麼解？','因式分解的方法','畢氏定理','三角比','概率怎麼算','總結我的錯題','平均數與中位數'
+  ];
+  $('#quickAsk').innerHTML = quick.map(q=>`<button>${q}</button>`).join('');
+  $$('#quickAsk button').forEach(b=>{
+    b.onclick = ()=>{ sendChat(b.textContent); };
+  });
+
+  $('#chatSend').onclick = ()=>{ sendChat($('#chatInput').value); };
+  $('#chatInput').onkeydown = e=>{
+    if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendChat($('#chatInput').value); }
+  };
+
+  // 拍照
+  const pf = $('#photoFile');
+  pf.onchange = ()=>{
+    const f = pf.files[0];
+    if(!f) return;
+    const url = URL.createObjectURL(f);
+    $('#preview').src = url;
+    $('#preview').style.display = 'block';
+    $('#photoTypeField').style.display = 'block';
+    $('#photoAnalyze').style.display = 'block';
+
+    const types = ['ptEq1','ptEq2','ptFactor','ptGeo','ptStat','ptOther'];
+    $('#photoType').innerHTML = types.map(k=>`<option value="${k}">${t(k)}</option>`).join('');
+  };
+
+  $('#photoAnalyze').onclick = ()=>{
+    const type = $('#photoType').value;
+    const name = t(type);
+    const frameworks = {
+      ptEq1:'① 去括號 → ② 移項（變號）→ ③ 化係數為 1 → ④ 代回驗算',
+      ptEq2:'① 整理成 ax²+bx+c=0 → ② 嘗試因式分解 → ③ 不行則用公式 x=[−b±√(b²−4ac)]/2a → ④ 用判別式檢查根的情況',
+      ptFactor:'① 先提公因式 → ② 檢查平方差 a²−b² → ③ 檢查完全平方 → ④ 十字相乘 → ⑤ 展開驗算',
+      ptGeo:'① 畫圖標示已知條件 → ② 找出相關定理（內角和／相似／圓性質）→ ③ 列式 → ④ 求解 → ⑤ 檢查單位與合理性',
+      ptStat:'① 整理數據 → ② 按題意選平均數／中位數／眾數 → ③ 計算 → ④ 檢查是否受極端值影響',
+      ptOther:'① 讀題找已知與所求 → ② 找出對應的數學模型 → ③ 列式計算 → ④ 驗算與單位檢查'
+    };
+    const msg = `📷 <b>${name}</b>\n\n我已收到你的題目圖片。以下是這類題型的解題框架：\n\n${frameworks[type]}\n\n<b>建議步驟</b>\n1. 先自己按框架做一次\n2. 到「專題練習」找對應課題練習 5 題\n3. 錯題會自動進入錯題本\n\n⚠️ 本地演示：真實 OCR 需接入後端 API。`;
+    chatHistory.push({me:false, text:msg});
+    renderChatLog();
+  };
+}
+
+function renderChatLog(){
+  const log = $('#chatLog');
+  log.innerHTML = chatHistory.map(m=>
+    `<div class="msg ${m.me?'me':'bot'}">${m.me?esc(m.text):m.text}</div>`).join('');
+  log.scrollTop = log.scrollHeight;
+}
+
+function sendChat(text){
+  text = (text||'').trim();
+  if(!text) return;
+  chatHistory.push({me:true, text});
+  const ans = aiAnswer(text);
+  chatHistory.push({me:false, text:ans});
+  $('#chatInput').value = '';
+  renderChatLog();
+}
+
+/* ---------- 我的 ---------- */
+function renderUser(){
+  const el = $('#view-user');
+  if(!state.user){
+    el.innerHTML = `
+      <div class="auth-card">
+        <h2>📝 ${t('loginTitle')}</h2>
+        <p>${t('loginSub')}</p>
+        <div class="auth-tabs">
+          <button class="active" data-tab="in">${t('signIn')}</button>
+          <button data-tab="up">${t('signUp')}</button>
+        </div>
+        <div class="field"><label>${t('username')}</label><input id="auName" autocomplete="username"></div>
+        <div class="field"><label>${t('password')}</label><input id="auPwd" type="password" autocomplete="current-password"></div>
+        <button class="btn primary" id="auBtn" style="width:100%;padding:13px">${t('loginBtn')}</button>
+        <div class="auth-msg" id="auMsg"></div>
+      </div>`;
+    let mode = 'in';
+    $$('.auth-tabs button').forEach(b=>{
+      b.onclick = ()=>{
+        mode = b.dataset.tab;
+        $$('.auth-tabs button').forEach(x=>x.classList.toggle('active', x===b));
+        $('#auBtn').textContent = mode==='in' ? t('loginBtn') : t('regBtn');
+        $('#auMsg').textContent = '';
+      };
+    });
+    const submit = ()=>{
+      const name = $('#auName').value.trim();
+      const pwd = $('#auPwd').value;
+      const msg = $('#auMsg');
+      if(!name || pwd.length < 4){ msg.className='auth-msg err'; msg.textContent=t('authShort'); return; }
+      const users = DB.users;
+      if(mode==='up'){
+        if(users[name]){ msg.className='auth-msg err'; msg.textContent=t('authExist'); return; }
+        users[name] = {pwd: hash(pwd), created: Date.now()};
+        DB.users = users;
+        DB.setCur(name);
+        state.user = name;
+        msg.className='auth-msg ok'; msg.textContent=t('regOk');
+        setTimeout(()=>{ state.view='user'; render(); }, 500);
+      } else {
+        if(!users[name] || users[name].pwd !== hash(pwd)){
+          msg.className='auth-msg err'; msg.textContent=t('authErr'); return;
+        }
+        DB.setCur(name);
+        state.user = name;
+        render();
+      }
+    };
+    $('#auBtn').onclick = submit;
+    $('#auPwd').onkeydown = e=>{ if(e.key==='Enter') submit(); };
+    return;
+  }
+
+  const d = DB.data(state.user);
+  const tabs = [
+    {id:'history', label:`📈 ${t('tabHistory')} (${d.history.length})`},
+    {id:'wrong',   label:`📕 ${t('tabWrong')} (${d.wrong.length})`},
+    {id:'notes',   label:`📊 ${t('tabNotes')} (${d.notes.length})`}
+  ];
+
+  let body = '';
+  if(state.userTab==='history') body = renderHistory(d);
+  else if(state.userTab==='wrong') body = renderWrong(d);
+  else body = renderNotes(d);
+
+  el.innerHTML = `
+    <div class="panel" style="margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span class="avatar" style="width:38px;height:38px;font-size:16px">${esc(state.user[0].toUpperCase())}</span>
+        <div>
+          <div style="font-weight:800;font-size:15px">${t('welcome',{n:esc(state.user)})}</div>
+          <div style="font-size:12px;color:#7b8798">${d.history.length} 次練習 · ${d.wrong.length} 道錯題 · ${d.notes.length} 則筆記</div>
+        </div>
+      </div>
+      <button class="btn ghost sm" id="logoutBtn">${t('logout')}</button>
+    </div>
+    <div class="tabs">${tabs.map(x=>`<button data-t="${x.id}" class="${state.userTab===x.id?'active':''}">${x.label}</button>`).join('')}</div>
+    <div id="userBody">${body}</div>`;
+
+  $('#logoutBtn').onclick = ()=>{ DB.setCur(null); state.user=null; render(); };
+  $$('.tabs button').forEach(b=>{
+    b.onclick = ()=>{ state.userTab = b.dataset.t; renderUser(); };
+  });
+  bindUserBody();
+}
+
+function renderHistory(d){
+  if(!d.history.length) return `<div class="empty"><div class="ic">📈</div>${t('noHistory')}</div>`;
+  return d.history.map((h,i)=>{
+    const pct = Math.round(h.correct/h.total*100);
+    const cls = pct>=80?'ok':(pct>=60?'mid':'bad');
+    return `<div class="item">
+      <div class="item-head">
+        <div><b>${h.topicName || h.topic}</b>
+          <span class="badge ${cls}">${h.correct}/${h.total} · ${pct}%</span>
+          <span class="meta" style="margin-left:8px">${GRADE_META[h.grade] ? GRADE_META[h.grade].name[state.lang] : ''} · ${t('lv'+(h.level||1))}</span>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <span class="meta">${new Date(h.date).toLocaleString()}</span>
+          <button class="btn ghost sm" data-exp="${i}">${t('review')}</button>
+        </div>
+      </div>
+      <div class="detail" id="hd${i}">
+        ${h.details.map((x,j)=>{
+          const ok = x.ok;
+          return `<div style="padding:10px 0;border-bottom:1px dashed #eef2f9">
+            <div class="dq">${j+1}. ${x.q[state.lang]}</div>
+            <div class="dmeta">
+              ${t('yourAns')}：${x.userRaw!=null && x.userRaw!=='' ? esc(x.userRaw) : t('noAns')}
+              　|　${t('rightAns')}：<b>${NUM(x.ans)}</b>
+              <span class="badge ${ok?'ok':'bad'}">${ok?'✅':'❌'}</span>
+            </div>
+            <div class="dex">${x.ex[state.lang]}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderWrong(d){
+  if(!d.wrong.length) return `<div class="empty"><div class="ic">🎉</div>${t('noWrong')}</div>`;
+  return d.wrong.map((w,i)=>`
+    <div class="item">
+      <div class="item-head">
+        <div><b>${w.topicName || w.topic}</b>
+          <span class="badge bad">${t('lv'+(w.level||1))}</span>
+          <span class="meta" style="margin-left:8px">${new Date(w.date).toLocaleDateString()}</span>
+        </div>
+        <div style="display:flex;gap:6px">
+          <button class="btn ghost sm" data-expw="${i}">${t('review')}</button>
+          <button class="btn danger sm" data-delw="${i}">🗑</button>
+        </div>
+      </div>
+      <div class="detail" id="wd${i}">
+        <div class="dq">${w.q[state.lang]}</div>
+        <div class="dmeta">
+          ${t('yourAns')}：${w.userRaw!=null && w.userRaw!=='' ? esc(w.userRaw) : t('noAns')}
+          　|　${t('rightAns')}：<b>${NUM(w.ans)}</b>
+        </div>
+        <div class="dex">${w.ex[state.lang]}</div>
+        <button class="btn primary sm" data-master="${i}" style="margin-top:10px">${t('mastered')}</button>
+      </div>
+    </div>`).join('');
+}
+
+function renderNotes(d){
+  return `
+    <button class="btn primary" id="addNote" style="margin-bottom:14px">＋ ${t('newNote')}</button>
+    <div id="noteForm"></div>
+    ${d.notes.length ? d.notes.map((n,i)=>`
+      <div class="note-item">
+        <h5>
+          <span>${esc(n.title)} ${n.tag?`<span class="tag">${esc(n.tag)}</span>`:''}</span>
+          <span style="display:flex;gap:6px">
+            <button class="btn ghost sm" data-editn="${i}">✏</button>
+            <button class="btn danger sm" data-deln="${i}">🗑</button>
+          </span>
+        </h5>
+        <p>${esc(n.body)}</p>
+        <div style="font-size:11px;color:#94a3b8;margin-top:6px">${new Date(n.date).toLocaleString()}</div>
+      </div>`).join('') : `<div class="empty"><div class="ic">📊</div>${t('noNotes')}</div>`}`;
+}
+
+function bindUserBody(){
+  const d = DB.data(state.user);
+
+  $$('[data-exp]').forEach(b=>{
+    b.onclick = ()=>{
+      const el = $('#hd'+b.dataset.exp);
+      el.classList.toggle('show');
+    };
+  });
+  $$('[data-expw]').forEach(b=>{
+    b.onclick = ()=>{ $('#wd'+b.dataset.expw).classList.toggle('show'); };
+  });
+  $$('[data-delw]').forEach(b=>{
+    b.onclick = ()=>{
+      d.wrong.splice(+b.dataset.delw,1);
+      DB.save(state.user, d);
+      renderUser();
+    };
+  });
+  $$('[data-master]').forEach(b=>{
+    b.onclick = ()=>{
+      d.wrong.splice(+b.dataset.master,1);
+      DB.save(state.user, d);
+      renderUser();
+    };
+  });
+
+  const addBtn = $('#addNote');
+  if(addBtn) addBtn.onclick = ()=> showNoteForm(-1);
+
+  $$('[data-editn]').forEach(b=>{
+    b.onclick = ()=> showNoteForm(+b.dataset.editn);
+  });
+  $$('[data-deln]').forEach(b=>{
+    b.onclick = ()=>{
+      d.notes.splice(+b.dataset.deln,1);
+      DB.save(state.user, d);
+      renderUser();
+    };
+  });
+}
+
+function showNoteForm(idx){
+  const d = DB.data(state.user);
+  const n = idx>=0 ? d.notes[idx] : {title:'', tag:'', body:''};
+  $('#noteForm').innerHTML = `
+    <div class="panel" style="margin-bottom:14px">
+      <div class="field"><label>${t('noteTitle')}</label><input id="ntTitle" value="${esc(n.title)}"></div>
+      <div class="field"><label>${t('noteTag')}</label><input id="ntTag" value="${esc(n.tag||'')}"></div>
+      <div class="field"><label>${t('noteBody')}</label><textarea id="ntBody">${esc(n.body)}</textarea></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn primary" id="ntSave" style="flex:1">${t('save')}</button>
+        <button class="btn ghost" id="ntCancel" style="flex:1">${t('cancel')}</button>
+      </div>
+    </div>`;
+
+  $('#ntCancel').onclick = ()=>{ $('#noteForm').innerHTML=''; };
+  $('#ntSave').onclick = ()=>{
+    const title = $('#ntTitle').value.trim() || '未命名筆記';
+    const tag = $('#ntTag').value.trim();
+    const body = $('#ntBody').value.trim();
+    if(!body) return;
+    if(idx>=0){ d.notes[idx] = {...d.notes[idx], title, tag, body, date:Date.now()}; }
+    else { d.notes.unshift({id:'n'+Date.now(), title, tag, body, date:Date.now()}); }
+    DB.save(state.user, d);
+    renderUser();
+  };
+}
+
+/* ============================================================
+   8. 事件綁定 & 啟動
+   ============================================================ */
+$$('.lang-switch button').forEach(b=>{
+  b.onclick = ()=>{ state.lang = b.dataset.lang; chatHistory.length=0; render(); };
+});
+
+render();
+
+/* 視窗大小變化時重繪坐標系 */
+let rzT;
+window.addEventListener('resize', ()=>{
+  clearTimeout(rzT);
+  rzT = setTimeout(()=>{
+    if(state.view==='graph' && G.canvas){ setupCanvas(); drawGraph(); }
+  }, 150);
+});
+
+/* ============================================================
+   9. 擴展說明（供開發者參考）
+   ------------------------------------------------------------
+   • 接入真實 AI：把 aiAnswer() 改成 fetch 到你的後端 /api/chat
+   • 接入真實 OCR：把 photoAnalyze 改成上傳到後端，回傳辨識文字後
+     再交給 aiAnswer() 處理
+   • 題庫擴充：在 BANK 中加入新的 generator 函數即可
+   • 帳號系統：目前用 localStorage 模擬，正式部署請改用伺服器 + bcrypt
+   ============================================================ */
+</script>
+</body>
+</html>
